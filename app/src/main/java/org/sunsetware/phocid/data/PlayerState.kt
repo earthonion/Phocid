@@ -40,7 +40,6 @@ import org.sunsetware.phocid.AUDIO_OFFLOADING_KEY
 import org.sunsetware.phocid.AUDIO_SESSION_ID_KEY
 import org.sunsetware.phocid.FILE_PATH_KEY
 import org.sunsetware.phocid.PAUSE_ON_FOCUS_LOSS
-import org.sunsetware.phocid.PLAYER_STATE_FILE_NAME
 import org.sunsetware.phocid.PLAY_ON_OUTPUT_DEVICE_CONNECTION_KEY
 import org.sunsetware.phocid.PlaybackService
 import org.sunsetware.phocid.RESHUFFLE_ON_REPEAT_KEY
@@ -96,8 +95,8 @@ fun Player.restorePlayerState(state: PlayerState, unfilteredTrackIndex: Unfilter
     // Shuffle must be set before items or items will be shuffled again
     shuffleModeEnabled = state.shuffle
     setMediaItems(
-        state.actualPlayQueue.mapIndexed { index, id ->
-            unfilteredTrackIndex.tracks[id]!!.getMediaItem(
+        state.actualPlayQueue.mapIndexedNotNull { index, id ->
+            unfilteredTrackIndex.tracks[id]?.getMediaItem(
                 state.unshuffledPlayQueueMapping?.indexOf(index)
             )
         }
