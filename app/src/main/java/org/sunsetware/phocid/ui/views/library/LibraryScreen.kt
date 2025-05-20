@@ -97,7 +97,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.media3.common.Player
-import kotlin.math.roundToInt
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.delay
@@ -146,6 +145,7 @@ import org.sunsetware.phocid.utils.combine
 import org.sunsetware.phocid.utils.flatMapLatest
 import org.sunsetware.phocid.utils.icuFormat
 import org.sunsetware.phocid.utils.map
+import org.sunsetware.phocid.utils.roundToIntOrZero
 import org.sunsetware.phocid.utils.runningReduce
 
 @Immutable
@@ -935,7 +935,7 @@ private inline fun ViewSettings(
                         value = gridSize.toFloat(),
                         valueRange = 0f..maxGridSize.toFloat(),
                         steps = (maxGridSize - 1).coerceAtLeast(0),
-                        onValueChange = { onSetGridSize(it.roundToInt()) },
+                        onValueChange = { onSetGridSize(it.roundToIntOrZero()) },
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                 }

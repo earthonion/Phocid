@@ -12,11 +12,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import kotlin.math.roundToInt
 import org.sunsetware.phocid.Dialog
 import org.sunsetware.phocid.MainViewModel
 import org.sunsetware.phocid.ui.components.DialogBase
 import org.sunsetware.phocid.ui.components.SteppedSliderWithNumber
+import org.sunsetware.phocid.utils.roundToIntOrZero
 
 @Stable
 class PreferencesSteppedSliderDialog(
@@ -43,7 +43,7 @@ class PreferencesSteppedSliderDialog(
                 number = numberFormatter(value),
                 onReset = { value = defaultValue },
                 value = value.toFloat(),
-                onValueChange = { value = it.roundToInt() },
+                onValueChange = { value = it.roundToIntOrZero() },
                 steps = max - min - 1,
                 valueRange = min.toFloat()..max.toFloat(),
                 modifier = Modifier.padding(horizontal = 24.dp),

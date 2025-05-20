@@ -42,7 +42,6 @@ import java.net.URLConnection
 import java.util.Locale
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
-import kotlin.math.roundToInt
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.takeWhile
 import org.apache.commons.io.FilenameUtils
@@ -58,6 +57,7 @@ import org.sunsetware.phocid.ui.views.library.LibraryScreen
 import org.sunsetware.phocid.ui.views.library.LibraryScreenTabType
 import org.sunsetware.phocid.ui.views.player.PlayerScreen
 import org.sunsetware.phocid.utils.combine
+import org.sunsetware.phocid.utils.roundToIntOrZero
 
 class MainActivity : ComponentActivity(), IntentLauncher {
     private val launchIntent = AtomicReference<Intent>(null)
@@ -212,7 +212,7 @@ class MainActivity : ComponentActivity(), IntentLauncher {
                                                         0,
                                                         ((1 - playerScreenDragState.position) *
                                                                 playerScreenDragState.length)
-                                                            .roundToInt(),
+                                                            .roundToIntOrZero(),
                                                     )
                                                 }
                                         ) {

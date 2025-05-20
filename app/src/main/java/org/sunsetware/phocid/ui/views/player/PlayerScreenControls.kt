@@ -47,7 +47,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.Player
-import kotlin.math.roundToInt
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.delay
@@ -67,6 +66,7 @@ import org.sunsetware.phocid.ui.theme.contentColor
 import org.sunsetware.phocid.ui.theme.contentColorVariant
 import org.sunsetware.phocid.ui.theme.darken
 import org.sunsetware.phocid.ui.views.MenuItem
+import org.sunsetware.phocid.utils.roundToIntOrZero
 
 @Immutable
 sealed class PlayerScreenControls {
@@ -242,9 +242,7 @@ class PlayerScreenControlsDefaultBase(
         val progressSeconds by
             remember(currentTrack) {
                 derivedStateOf {
-                    (progress * (currentTrack.duration.inWholeSeconds))
-                        .let { if (it.isNaN()) 0f else it }
-                        .roundToInt()
+                    (progress * (currentTrack.duration.inWholeSeconds)).roundToIntOrZero()
                 }
             }
         var isDraggingProgressSlider by remember { mutableStateOf(false) }

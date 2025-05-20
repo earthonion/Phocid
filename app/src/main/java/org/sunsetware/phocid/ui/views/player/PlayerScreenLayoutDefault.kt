@@ -5,8 +5,8 @@ import androidx.compose.ui.layout.Measurable
 import androidx.compose.ui.layout.Placeable
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Density
-import kotlin.math.roundToInt
 import org.sunsetware.phocid.ui.components.BinaryDragState
+import org.sunsetware.phocid.utils.roundToIntOrZero
 
 @Immutable
 object PlayerScreenLayoutDefault : PlayerScreenLayout() {
@@ -71,7 +71,7 @@ object PlayerScreenLayoutDefaultPortrait : PlayerScreenLayout() {
         queueDragState: BinaryDragState,
         lyricsViewVisibility: Float,
     ) {
-        val offset = (queueDragState.length * queueDragState.position).roundToInt()
+        val offset = (queueDragState.length * queueDragState.position).roundToIntOrZero()
 
         val artworkHeight = width
         artwork
@@ -163,7 +163,7 @@ object PlayerScreenLayoutDefaultLandscape : PlayerScreenLayout() {
         queueDragState: BinaryDragState,
         lyricsViewVisibility: Float,
     ) {
-        val offset = (queueDragState.length * queueDragState.position).roundToInt()
+        val offset = (queueDragState.length * queueDragState.position).roundToIntOrZero()
 
         val artworkWidth = height
         artwork
@@ -232,7 +232,7 @@ object PlayerScreenLayoutDefaultSquare : PlayerScreenLayout() {
         queueDragState: BinaryDragState,
         lyricsViewVisibility: Float,
     ) {
-        val offset = (queueDragState.length * queueDragState.position).roundToInt()
+        val offset = (queueDragState.length * queueDragState.position).roundToIntOrZero()
 
         val topBarPlaceable =
             topBarStandalone.measure(Constraints(maxWidth = width, maxHeight = height))

@@ -42,7 +42,6 @@ import com.ibm.icu.number.Precision
 import com.ibm.icu.util.MeasureUnit
 import java.nio.charset.Charset
 import java.util.Locale
-import kotlin.math.roundToInt
 import org.sunsetware.phocid.BuildConfig
 import org.sunsetware.phocid.MainViewModel
 import org.sunsetware.phocid.R
@@ -63,6 +62,7 @@ import org.sunsetware.phocid.ui.views.playlist.PlaylistIoScreen
 import org.sunsetware.phocid.ui.views.playlist.PlaylistIoSettingsDialog
 import org.sunsetware.phocid.utils.combine
 import org.sunsetware.phocid.utils.icuFormat
+import org.sunsetware.phocid.utils.roundToIntOrZero
 
 @Stable
 object PreferencesScreen : TopLevelScreen() {
@@ -271,7 +271,7 @@ object PreferencesScreen : TopLevelScreen() {
                                         initialValue = {
                                             it.preferences.value.densityMultiplier
                                                 .times(100)
-                                                .roundToInt()
+                                                .roundToIntOrZero()
                                         },
                                         defaultValue = 100,
                                         min = 50,

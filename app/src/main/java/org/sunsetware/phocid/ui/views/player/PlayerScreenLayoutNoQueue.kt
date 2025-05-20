@@ -6,8 +6,8 @@ import androidx.compose.ui.layout.Placeable
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
-import kotlin.math.roundToInt
 import org.sunsetware.phocid.ui.components.BinaryDragState
+import org.sunsetware.phocid.utils.roundToIntOrZero
 
 private val queueHeaderHeight = 56.dp
 
@@ -74,7 +74,7 @@ object PlayerScreenLayoutNoQueuePortrait : PlayerScreenLayout() {
         queueDragState: BinaryDragState,
         lyricsViewVisibility: Float,
     ) {
-        val offset = (queueDragState.length * queueDragState.position).roundToInt()
+        val offset = (queueDragState.length * queueDragState.position).roundToIntOrZero()
 
         val artworkHeight = width
         artwork
@@ -125,7 +125,7 @@ object PlayerScreenLayoutNoQueuePortrait : PlayerScreenLayout() {
                         maxWidth = width,
                         maxHeight =
                             ((height - topBarOverlayPlaceable.height) * 0.38196602f)
-                                .roundToInt()
+                                .roundToIntOrZero()
                                 .coerceAtLeast(0),
                     )
                 )
@@ -168,7 +168,7 @@ object PlayerScreenLayoutNoQueueLandscape : PlayerScreenLayout() {
         queueDragState: BinaryDragState,
         lyricsViewVisibility: Float,
     ) {
-        val offset = (queueDragState.length * queueDragState.position).roundToInt()
+        val offset = (queueDragState.length * queueDragState.position).roundToIntOrZero()
 
         val artworkWidth = height
         artwork
@@ -243,7 +243,7 @@ object PlayerScreenLayoutNoQueueSquare : PlayerScreenLayout() {
         queueDragState: BinaryDragState,
         lyricsViewVisibility: Float,
     ) {
-        val offset = (queueDragState.length * queueDragState.position).roundToInt()
+        val offset = (queueDragState.length * queueDragState.position).roundToIntOrZero()
 
         val topBarPlaceable =
             topBarStandalone.measure(Constraints(maxWidth = width, maxHeight = height))

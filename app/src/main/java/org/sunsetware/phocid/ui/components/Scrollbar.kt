@@ -42,12 +42,12 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
 import kotlin.math.ceil
-import kotlin.math.roundToInt
 import org.sunsetware.phocid.TNUM
 import org.sunsetware.phocid.ui.theme.EXIT_DURATION
 import org.sunsetware.phocid.ui.theme.Typography
 import org.sunsetware.phocid.ui.theme.contentColor
 import org.sunsetware.phocid.ui.theme.emphasized
+import org.sunsetware.phocid.utils.roundToIntOrZero
 
 val SCROLLBAR_DEFAULT_WIDTH = 4.dp
 val SCROLLBAR_DEFAULT_COLOR
@@ -219,7 +219,7 @@ inline fun ScrollbarThumb(
                                     onRequestScrollToItem(
                                         ((change.position.y + yOffset) / size.height *
                                                 totalItemsCount)
-                                            .roundToInt()
+                                            .roundToIntOrZero()
                                             .coerceAtMost(totalItemsCount - 1)
                                             .coerceAtLeast(0)
                                     )
@@ -322,7 +322,8 @@ inline fun Scrollbar(
                     ?.size
                     ?.width
                     ?.let { state.layoutInfo.viewportSize.width.toFloat() / it }
-                    ?.roundToInt() ?: 1
+                    ?.roundToIntOrZero()
+                    ?.coerceAtLeast(1) ?: 1
             }
         }
     val density = LocalDensity.current

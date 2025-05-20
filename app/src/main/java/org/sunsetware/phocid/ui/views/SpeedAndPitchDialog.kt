@@ -17,7 +17,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import kotlin.math.log
 import kotlin.math.pow
-import kotlin.math.roundToInt
 import org.sunsetware.phocid.Dialog
 import org.sunsetware.phocid.MainViewModel
 import org.sunsetware.phocid.R
@@ -27,6 +26,7 @@ import org.sunsetware.phocid.ui.components.SteppedSliderWithNumber
 import org.sunsetware.phocid.ui.components.UtilityCheckBoxListItem
 import org.sunsetware.phocid.ui.components.UtilityListHeader
 import org.sunsetware.phocid.utils.icuFormat
+import org.sunsetware.phocid.utils.roundToIntOrZero
 
 @Stable
 class SpeedAndPitchDialog() : Dialog() {
@@ -34,7 +34,7 @@ class SpeedAndPitchDialog() : Dialog() {
     override fun Compose(viewModel: MainViewModel) {
         val playerManager = viewModel.playerManager
         var newSpeedTimes100 by remember {
-            mutableIntStateOf((viewModel.playerManager.state.value.speed * 100).roundToInt())
+            mutableIntStateOf((viewModel.playerManager.state.value.speed * 100).roundToIntOrZero())
         }
         var resample by remember {
             mutableStateOf(
@@ -44,7 +44,7 @@ class SpeedAndPitchDialog() : Dialog() {
         var newPitchSemitones by remember {
             mutableIntStateOf(
                 if (resample) 0
-                else (log(viewModel.playerManager.state.value.pitch, 2f) * 12).roundToInt()
+                else (log(viewModel.playerManager.state.value.pitch, 2f) * 12).roundToIntOrZero()
             )
         }
         DialogBase(
@@ -67,7 +67,7 @@ class SpeedAndPitchDialog() : Dialog() {
                         ),
                     onReset = { newSpeedTimes100 = 100 },
                     value = newSpeedTimes100.toFloat(),
-                    onValueChange = { newSpeedTimes100 = it.roundToInt() },
+                    onValueChange = { newSpeedTimes100 = it.roundToIntOrZero() },
                     steps = 300 - 10 - 1,
                     valueRange = 10f..300f,
                     modifier = Modifier.padding(horizontal = 24.dp).fillMaxWidth(),
@@ -88,7 +88,7 @@ class SpeedAndPitchDialog() : Dialog() {
                         if (resample) newSpeedTimes100.toFloat() else newPitchSemitones.toFloat(),
                     onValueChange = {
                         if (!resample) {
-                            newPitchSemitones = it.roundToInt()
+                            newPitchSemitones = it.roundToIntOrZero()
                         }
                     },
                     steps = if (resample) 300 - 10 - 1 else 24 - (-24) - 1,

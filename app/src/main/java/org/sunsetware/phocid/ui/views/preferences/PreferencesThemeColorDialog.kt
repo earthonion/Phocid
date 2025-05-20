@@ -18,7 +18,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import kotlin.math.roundToInt
 import org.sunsetware.phocid.Dialog
 import org.sunsetware.phocid.MainViewModel
 import org.sunsetware.phocid.R
@@ -30,6 +29,7 @@ import org.sunsetware.phocid.ui.components.SelectBox
 import org.sunsetware.phocid.ui.components.SteppedSliderWithNumber
 import org.sunsetware.phocid.ui.components.UtilityListHeader
 import org.sunsetware.phocid.utils.icuFormat
+import org.sunsetware.phocid.utils.roundToIntOrZero
 
 @Stable
 class PreferencesThemeColorDialog() : Dialog() {
@@ -79,7 +79,7 @@ class PreferencesThemeColorDialog() : Dialog() {
                                     chromaPercentage
                                 ),
                             value = chromaPercentage.toFloat(),
-                            onValueChange = { chromaPercentage = it.roundToInt() },
+                            onValueChange = { chromaPercentage = it.roundToIntOrZero() },
                             onValueChangeFinished = {
                                 viewModel.updatePreferences {
                                     it.copy(
@@ -99,7 +99,7 @@ class PreferencesThemeColorDialog() : Dialog() {
                                     hueDegrees
                                 ),
                             value = hueDegrees.toFloat(),
-                            onValueChange = { hueDegrees = it.roundToInt() },
+                            onValueChange = { hueDegrees = it.roundToIntOrZero() },
                             onValueChangeFinished = {
                                 viewModel.updatePreferences {
                                     it.copy(
