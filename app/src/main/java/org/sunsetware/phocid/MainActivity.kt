@@ -306,7 +306,6 @@ class MainActivity : ComponentActivity(), IntentLauncher {
             }
             ACTION_VIEW -> {
                 Log.d("Phocid", "View intent: ${intent.data}")
-                scanJob.join()
 
                 if (intent.data == null) {
                     uiManager.toast(Strings[R.string.toast_view_intent_not_found])
@@ -328,17 +327,28 @@ class MainActivity : ComponentActivity(), IntentLauncher {
                                 }
                             } ?: (null to null)
 
-                    val libraryIndex = libraryIndex()
-                    val track =
-                        if (fileName != null) {
-                            libraryIndex.tracks.values.firstOrNull {
-                                it.fileName.equals(fileName, true) && it.size == size
-                            }
-                        } else null
-                    if (track == null) {
+                    if (fileName == null) {
                         uiManager.toast(Strings[R.string.toast_view_intent_not_found])
                     } else {
-                        playerManager.setTracks(listOf(track), null)
+
+                        var track =
+                            libraryIndex().tracks.values.firstOrNull {
+                                it.fileName.equals(fileName, true) && it.size == size
+                            }
+                        if (track == null) {
+                            // Retry after the scan completes
+                            scanJob.join()
+                            track =
+                                libraryIndex().tracks.values.firstOrNull {
+                                    it.fileName.equals(fileName, true) && it.size == size
+                                }
+                        }
+
+                        if (track == null) {
+                            uiManager.toast(Strings[R.string.toast_view_intent_not_found])
+                        } else {
+                            playerManager.setTracks(listOf(track), null)
+                        }
                     }
                 }
             }
