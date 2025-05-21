@@ -229,13 +229,13 @@ class MainViewModel(private val application: Application) : AndroidViewModel(app
                         } else {
                             Log.d("Phocid", "Library scan aborted: permission denied")
                         }
+                        playlistManager.syncPlaylists()
                     } finally {
                         scanMutex.unlock()
                         _isScanningLibrary.update { null }
                     }
                 }
             }
-            playlistManager.syncPlaylists()
         }
     }
 
