@@ -289,6 +289,8 @@ class MainActivity : ComponentActivity(), IntentLauncher {
         when (intent.action) {
             SHORTCUT_CONTINUE -> playerManager.play()
             SHORTCUT_SHUFFLE -> {
+                scanJob.join()
+
                 val tracksTab = preferences.tabSettings[LibraryScreenTabType.TRACKS]!!
                 playerManager.enableShuffle()
                 playerManager.state.takeWhile { !it.shuffle }.collect()
