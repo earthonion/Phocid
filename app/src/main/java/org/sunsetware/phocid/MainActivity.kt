@@ -1,11 +1,11 @@
 package org.sunsetware.phocid
 
-import android.content.ContentUris
 import android.content.Intent
 import android.content.Intent.ACTION_VIEW
 import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
+import android.provider.OpenableColumns
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
@@ -305,41 +305,41 @@ class MainActivity : ComponentActivity(), IntentLauncher {
                 )
             }
             ACTION_VIEW -> {
+                Log.d("Phocid", "View intent: ${intent.data}")
                 scanJob.join()
 
-                val id =
-                    try {
-                        if (intent.data?.scheme?.equals("content", true) == true) {
-                            ContentUris.parseId(intent.data!!)
-                        } else {
-                            null
-                        }
-                    } catch (_: Exception) {
-                        null
-                    }
-                val path = intent.data!!.path?.trimAndNormalize()
-                val fileName = FilenameUtils.getName(path).takeIf { it.isNotEmpty() }
-                Log.d("Phocid", "View intent: id=$id, path=$path (${intent.data})")
-
-                val libraryIndex = libraryIndex()
-                val track =
-                    libraryIndex.tracks[id]
-                        ?: if (fileName != null) {
-                            libraryIndex.tracks.values
-                                .mapNotNull {
-                                    if (it.fileName.equals(fileName, true)) {
-                                        it.path.commonSuffixWith(path!!, true).length to it
-                                    } else {
-                                        null
-                                    }
-                                }
-                                .maxByOrNull { it.first }
-                                ?.second
-                        } else null
-                if (track == null) {
+                if (intent.data == null) {
                     uiManager.toast(Strings[R.string.toast_view_intent_not_found])
                 } else {
-                    playerManager.setTracks(listOf(track), null)
+                    val (fileName, size) =
+                        contentResolver
+                            .query(
+                                intent.data!!,
+                                arrayOf(OpenableColumns.DISPLAY_NAME, OpenableColumns.SIZE),
+                                null,
+                                null,
+                                null,
+                            )
+                            ?.use { cursor ->
+                                if (cursor.moveToFirst()) {
+                                    cursor.getString(0).trimAndNormalize() to cursor.getLong(1)
+                                } else {
+                                    null
+                                }
+                            } ?: (null to null)
+
+                    val libraryIndex = libraryIndex()
+                    val track =
+                        if (fileName != null) {
+                            libraryIndex.tracks.values.firstOrNull {
+                                it.fileName.equals(fileName, true) && it.size == size
+                            }
+                        } else null
+                    if (track == null) {
+                        uiManager.toast(Strings[R.string.toast_view_intent_not_found])
+                    } else {
+                        playerManager.setTracks(listOf(track), null)
+                    }
                 }
             }
         }
