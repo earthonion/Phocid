@@ -49,6 +49,7 @@ import org.sunsetware.phocid.Strings
 import org.sunsetware.phocid.TopLevelScreen
 import org.sunsetware.phocid.data.ArtworkColorPreference
 import org.sunsetware.phocid.data.DarkThemePreference
+import org.sunsetware.phocid.data.HighResArtworkPreference
 import org.sunsetware.phocid.data.LyricsDisplayPreference
 import org.sunsetware.phocid.data.ShapePreference
 import org.sunsetware.phocid.data.TabStylePreference
@@ -226,6 +227,26 @@ object PreferencesScreen : TopLevelScreen() {
                                 it.copy(swipeToRemoveFromQueue = checked)
                             }
                         },
+                    )
+                    UtilityListItem(
+                        title = Strings[R.string.preferences_high_res_artwork],
+                        subtitle = Strings[preferences.highResArtworkPreference.stringId],
+                        modifier =
+                            Modifier.clickable {
+                                uiManager.openDialog(
+                                    PreferencesSingleChoiceDialog<HighResArtworkPreference>(
+                                        title = Strings[R.string.preferences_high_res_artwork],
+                                        options =
+                                            HighResArtworkPreference.entries.map {
+                                                it to Strings[it.stringId]
+                                            },
+                                        activeOption = { it.highResArtworkPreference },
+                                        updatePreferences = { preferences, new ->
+                                            preferences.copy(highResArtworkPreference = new)
+                                        },
+                                    )
+                                )
+                            },
                     )
                     UtilityListItem(
                         title = Strings[R.string.preferences_sorting_language],

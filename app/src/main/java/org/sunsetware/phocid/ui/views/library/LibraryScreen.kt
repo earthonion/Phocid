@@ -108,6 +108,7 @@ import org.sunsetware.phocid.R
 import org.sunsetware.phocid.Strings
 import org.sunsetware.phocid.TNUM
 import org.sunsetware.phocid.data.ArtworkColorPreference
+import org.sunsetware.phocid.data.HighResArtworkPreference
 import org.sunsetware.phocid.data.InvalidTrack
 import org.sunsetware.phocid.data.LibraryIndex
 import org.sunsetware.phocid.data.PlayerManager
@@ -344,6 +345,7 @@ fun LibraryScreen(
                 playerManager,
                 libraryIndex,
                 viewModel.carouselArtworkCache,
+                preferences.highResArtworkPreference,
                 preferences.artworkColorPreference,
                 preferences.shapePreference.artworkShape,
                 uiManager.playerScreenDragState,
@@ -705,6 +707,7 @@ private fun BottomBar(
     playerManager: PlayerManager,
     libraryIndex: LibraryIndex,
     carouselArtworkCache: ArtworkCache,
+    highResArtworkPreference: HighResArtworkPreference,
     artworkColorPreference: ArtworkColorPreference,
     artworkShape: Shape,
     playerScreenDragState: BinaryDragState,
@@ -838,7 +841,7 @@ private fun BottomBar(
                                         artwork = Artwork.Track(track),
                                         artworkColorPreference = artworkColorPreference,
                                         shape = artworkShape,
-                                        highRes = true,
+                                        highRes = highResArtworkPreference.player,
                                         highResCache = carouselArtworkCache,
                                         modifier = Modifier.fillMaxSize(),
                                     )

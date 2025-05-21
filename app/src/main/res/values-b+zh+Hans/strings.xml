@@ -143,6 +143,11 @@
     <string name="preferences_folder_tab_root">首页文件夹</string>
     <string name="preferences_grant_images_permission">授予图片读取权限</string>
     <string name="preferences_grant_images_permission_subtitle">仅在无法显示外置图片时需要授予</string>
+    <string name="preferences_high_res_artwork">加载高清图像</string>
+    <string name="preferences_high_res_artwork_always">总是</string>
+    <string name="preferences_high_res_artwork_large_only">仅大号图像</string>
+    <string name="preferences_high_res_artwork_never">从不</string>
+    <string name="preferences_high_res_artwork_player_only">仅播放器</string>
     <string name="preferences_indexing">索引</string>
     <string name="preferences_indexing_advanced_metadata_extraction">高级元数据提取</string>
     <string name="preferences_indexing_advanced_metadata_extraction_subtitle">提取多个标签和内嵌歌词，但是非常慢。手动重新扫描后生效。</string>

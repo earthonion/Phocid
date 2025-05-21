@@ -65,7 +65,6 @@ fun ArtworkImage(
     artwork: Artwork,
     artworkColorPreference: ArtworkColorPreference,
     shape: Shape,
-    /** Ignored if [highResCache] is not null. */
     highRes: Boolean,
     modifier: Modifier = Modifier,
     contentScale: ContentScale = ContentScale.Crop,
@@ -76,7 +75,7 @@ fun ArtworkImage(
     var image by
         remember(artwork) {
             mutableStateOf(
-                if (highResCache != null && artwork is Artwork.Track) {
+                if (highRes && highResCache != null && artwork is Artwork.Track) {
                     highResCache.get(artwork.track)?.value?.asImageBitmap()
                 } else {
                     null as ImageBitmap?
@@ -94,7 +93,7 @@ fun ArtworkImage(
         if (artwork is Artwork.Track && image == null) {
             withContext(Dispatchers.IO) {
                 image =
-                    if (highResCache != null) {
+                    if (highRes && highResCache != null) {
                         highResCache
                             .getOrPut(artwork.track) {
                                 Boxed(

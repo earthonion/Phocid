@@ -152,6 +152,11 @@
     <string name="preferences_folder_tab_root">資料夾分頁起始目錄</string>
     <string name="preferences_grant_images_permission">授予讀取相片和影片的權限</string>
     <string name="preferences_grant_images_permission_subtitle">只有在外部封面影像未正常顯示時才會需要</string>
+    <string name="preferences_high_res_artwork">載入高畫質封面</string>
+    <string name="preferences_high_res_artwork_always">總是</string>
+    <string name="preferences_high_res_artwork_large_only">僅大號封面</string>
+    <string name="preferences_high_res_artwork_never">從不</string>
+    <string name="preferences_high_res_artwork_player_only">僅播放器</string>
     <string name="preferences_indexing">索引</string>
     <string name="preferences_indexing_advanced_metadata_extraction">進階中繼資料取出</string>
     <string name="preferences_indexing_advanced_metadata_extraction_subtitle">讀取更多標籤與內嵌歌詞，但非常慢。會在手動重新掃描時套用。</string>

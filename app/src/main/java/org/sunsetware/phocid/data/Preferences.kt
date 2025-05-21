@@ -50,6 +50,7 @@ data class Preferences(
         },
     val playerScreenLayout: PlayerScreenLayoutType = PlayerScreenLayoutType.DEFAULT,
     val swipeToRemoveFromQueue: Boolean = false,
+    val highResArtworkPreference: HighResArtworkPreference = HighResArtworkPreference.PLAYER_ONLY,
     val sortingLocaleLanguageTag: String? = null,
     val lyricsDisplay: LyricsDisplayPreference = LyricsDisplayPreference.DEFAULT,
     val densityMultiplier: Float = 1f,
@@ -225,6 +226,19 @@ fun Track.getArtworkColor(preference: ArtworkColorPreference): Color {
                     ?: vibrantColor?.toOklch()?.copy(c = 0.05f)?.toColor()
                     ?: if (hasArtwork) GRAY else fileName.hashColor()
         }
+}
+
+@Serializable
+enum class HighResArtworkPreference(
+    val stringId: Int,
+    val player: Boolean,
+    val library: Boolean,
+    val small: Boolean,
+) {
+    NEVER(R.string.preferences_high_res_artwork_never, false, false, false),
+    PLAYER_ONLY(R.string.preferences_high_res_artwork_player_only, true, false, false),
+    LARGE_ONLY(R.string.preferences_high_res_artwork_large_only, true, true, false),
+    ALWAYS(R.string.preferences_high_res_artwork_always, true, true, true),
 }
 
 @Serializable

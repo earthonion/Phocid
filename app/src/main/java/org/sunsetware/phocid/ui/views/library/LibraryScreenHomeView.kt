@@ -70,6 +70,7 @@ import org.sunsetware.phocid.data.Artist
 import org.sunsetware.phocid.data.ArtworkColorPreference
 import org.sunsetware.phocid.data.Folder
 import org.sunsetware.phocid.data.Genre
+import org.sunsetware.phocid.data.HighResArtworkPreference
 import org.sunsetware.phocid.data.InvalidTrack
 import org.sunsetware.phocid.data.LibraryIndex
 import org.sunsetware.phocid.data.PlaylistManager
@@ -563,6 +564,7 @@ fun LibraryScreenHomeView(
                         gridSize = tab.gridSize,
                         items = items,
                         multiSelectManager = multiSelectState,
+                        highResArtworkPreference = preferences.highResArtworkPreference,
                         artworkColorPreference = preferences.artworkColorPreference,
                         artworkShape = preferences.shapePreference.artworkShape,
                         cardShape = preferences.shapePreference.cardShape,
@@ -670,6 +672,7 @@ private fun LibraryList(
     gridSize: Int,
     items: SelectableList<LibraryScreenHomeViewItem>,
     multiSelectManager: MultiSelectManager,
+    highResArtworkPreference: HighResArtworkPreference,
     artworkColorPreference: ArtworkColorPreference,
     artworkShape: Shape,
     cardShape: Shape,
@@ -698,7 +701,7 @@ private fun LibraryList(
                                     artwork = artwork,
                                     artworkColorPreference = artworkColorPreference,
                                     shape = artworkShape,
-                                    highRes = false,
+                                    highRes = highResArtworkPreference.small,
                                     modifier = Modifier.fillMaxSize(),
                                 )
                             },
@@ -743,7 +746,7 @@ private fun LibraryList(
                                     artwork = artwork,
                                     artworkColorPreference = artworkColorPreference,
                                     shape = RoundedCornerShape(0.dp),
-                                    highRes = true,
+                                    highRes = highResArtworkPreference.library,
                                     modifier = Modifier.fillMaxSize(),
                                 )
                             },

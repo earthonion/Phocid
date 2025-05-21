@@ -11,6 +11,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.Player
 import org.sunsetware.phocid.data.ArtworkColorPreference
+import org.sunsetware.phocid.data.HighResArtworkPreference
 import org.sunsetware.phocid.data.PlayerState
 import org.sunsetware.phocid.data.Track
 import org.sunsetware.phocid.ui.components.Artwork
@@ -26,6 +27,7 @@ sealed class PlayerScreenArtwork {
     abstract fun Compose(
         playerTransientStateVersion: Long,
         carouselArtworkCache: ArtworkCache,
+        highResArtworkPreference: HighResArtworkPreference,
         artworkColorPreference: ArtworkColorPreference,
         playerState: PlayerState,
         playerScreenDragState: BinaryDragState,
@@ -42,6 +44,7 @@ object PlayerScreenArtworkDefault : PlayerScreenArtwork() {
     override fun Compose(
         playerTransientStateVersion: Long,
         carouselArtworkCache: ArtworkCache,
+        highResArtworkPreference: HighResArtworkPreference,
         artworkColorPreference: ArtworkColorPreference,
         playerState: PlayerState,
         playerScreenDragState: BinaryDragState,
@@ -80,7 +83,7 @@ object PlayerScreenArtworkDefault : PlayerScreenArtwork() {
                 artworkColorPreference = artworkColorPreference,
                 shape = RoundedCornerShape(0.dp),
                 modifier = Modifier.fillMaxSize(),
-                highRes = true,
+                highRes = highResArtworkPreference.player,
                 highResCache = carouselArtworkCache,
             )
         }

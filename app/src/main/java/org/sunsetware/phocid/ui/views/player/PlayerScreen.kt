@@ -408,6 +408,7 @@ fun PlayerScreen(dragLock: DragLock, viewModel: MainViewModel = viewModel()) {
                             components.artwork.Compose(
                                 playerTransientStateVersion = playerTransientStateVersion,
                                 carouselArtworkCache = viewModel.carouselArtworkCache,
+                                highResArtworkPreference = preferences.highResArtworkPreference,
                                 artworkColorPreference = preferences.artworkColorPreference,
                                 playerState = playerState,
                                 playerScreenDragState = playerScreenDragState,

@@ -157,6 +157,11 @@
     <string name="preferences_folder_tab_root">Folder tab root</string>
     <string name="preferences_grant_images_permission">Grant permission to read images</string>
     <string name="preferences_grant_images_permission_subtitle">Only needed if external artwork images aren’t showing properly</string>
+    <string name="preferences_high_res_artwork">Load high-resolution artwork</string>
+    <string name="preferences_high_res_artwork_always">Always</string>
+    <string name="preferences_high_res_artwork_large_only">Only large images</string>
+    <string name="preferences_high_res_artwork_never">Never</string>
+    <string name="preferences_high_res_artwork_player_only">Only in player</string>
     <string name="preferences_indexing">Indexing</string>
     <string name="preferences_indexing_advanced_metadata_extraction">Advanced metadata extraction</string>
     <string name="preferences_indexing_advanced_metadata_extraction_subtitle">Reads multiple tags and embedded lyrics, but is very slow. Applies after a manual rescan.</string>
