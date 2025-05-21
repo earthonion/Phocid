@@ -15,11 +15,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
-import androidx.compose.material.icons.filled.Pause
-import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.filled.Repeat
-import androidx.compose.material.icons.filled.RepeatOne
-import androidx.compose.material.icons.filled.Shuffle
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -330,21 +325,21 @@ class PlayerScreenControlsDefaultBase(
                                 when (repeat) {
                                     Player.REPEAT_MODE_ALL ->
                                         Icon(
-                                            Icons.Filled.Repeat,
+                                            painterResource(R.drawable.player_repeat),
                                             contentDescription =
                                                 Strings[R.string.player_repeat_mode_all],
                                         )
 
                                     Player.REPEAT_MODE_ONE ->
                                         Icon(
-                                            Icons.Filled.RepeatOne,
+                                            painterResource(R.drawable.player_repeat_one),
                                             contentDescription =
                                                 Strings[R.string.player_repeat_mode_one],
                                         )
 
                                     else ->
                                         Icon(
-                                            Icons.Filled.Repeat,
+                                            painterResource(R.drawable.player_repeat),
                                             contentDescription =
                                                 Strings[R.string.player_repeat_mode_off],
                                             modifier = Modifier.alpha(INACTIVE_ALPHA),
@@ -365,12 +360,12 @@ class PlayerScreenControlsDefaultBase(
                                 AnimatedContent(targetState = isPlaying) { animatedIsPlaying ->
                                     if (animatedIsPlaying) {
                                         Icon(
-                                            Icons.Filled.Pause,
+                                            painterResource(R.drawable.player_pause),
                                             contentDescription = Strings[R.string.player_pause],
                                         )
                                     } else {
                                         Icon(
-                                            Icons.Filled.PlayArrow,
+                                            painterResource(R.drawable.player_play),
                                             contentDescription = Strings[R.string.player_play],
                                         )
                                     }
@@ -386,12 +381,12 @@ class PlayerScreenControlsDefaultBase(
                             IconButton(onClick = onToggleShuffle) {
                                 if (shuffle) {
                                     Icon(
-                                        Icons.Filled.Shuffle,
+                                        painterResource(R.drawable.player_shuffle),
                                         contentDescription = Strings[R.string.player_shuffle_on],
                                     )
                                 } else {
                                     Icon(
-                                        Icons.Filled.Shuffle,
+                                        painterResource(R.drawable.player_shuffle),
                                         contentDescription = Strings[R.string.player_shuffle_off],
                                         modifier = Modifier.alpha(INACTIVE_ALPHA),
                                     )
