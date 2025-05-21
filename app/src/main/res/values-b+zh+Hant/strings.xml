@@ -301,6 +301,7 @@
     <string name="toast_timer_canceled">已取消睡眠計時器</string>
     <string name="toast_timer_set">播放會在約 {0, plural, other {#}} 分鐘後暫停</string>
     <string name="toast_track_queued">已將 {0, plural, other {#}} 首曲目加入待播清單</string>
+    <string name="toast_view_intent_not_found">音樂庫中無對應檔案</string>
 
     <string name="track_add_to_queue">加入待播清單</string>
     <string name="track_details">詳細資料</string>

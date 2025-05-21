@@ -11,6 +11,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
 import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -166,8 +167,8 @@ class MainViewModel(private val application: Application) : AndroidViewModel(app
     }
 
     @OptIn(ExperimentalSerializationApi::class)
-    fun scanLibrary(force: Boolean) {
-        viewModelScope.launch {
+    fun scanLibrary(force: Boolean): Job {
+        return viewModelScope.launch {
             withContext(Dispatchers.IO) {
                 if (scanMutex.tryLock()) {
                     Log.d("Phocid", "Library scan started")
@@ -233,6 +234,10 @@ class MainViewModel(private val application: Application) : AndroidViewModel(app
                     } finally {
                         scanMutex.unlock()
                         _isScanningLibrary.update { null }
+                    }
+                } else {
+                    while (scanMutex.isLocked) {
+                        delay(1)
                     }
                 }
             }

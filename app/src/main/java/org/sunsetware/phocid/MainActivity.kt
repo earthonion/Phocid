@@ -1,9 +1,12 @@
 package org.sunsetware.phocid
 
+import android.content.ContentUris
 import android.content.Intent
+import android.content.Intent.ACTION_VIEW
 import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.BackHandler
@@ -42,9 +45,13 @@ import java.net.URLConnection
 import java.util.Locale
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.takeWhile
 import org.apache.commons.io.FilenameUtils
+import org.sunsetware.phocid.data.LibraryIndex
+import org.sunsetware.phocid.data.PlayerManager
+import org.sunsetware.phocid.data.Preferences
 import org.sunsetware.phocid.data.Track
 import org.sunsetware.phocid.data.getArtworkColor
 import org.sunsetware.phocid.data.preferencesSystemLocale
@@ -58,6 +65,7 @@ import org.sunsetware.phocid.ui.views.library.LibraryScreenTabType
 import org.sunsetware.phocid.ui.views.player.PlayerScreen
 import org.sunsetware.phocid.utils.combine
 import org.sunsetware.phocid.utils.roundToIntOrZero
+import org.sunsetware.phocid.utils.trimAndNormalize
 
 class MainActivity : ComponentActivity(), IntentLauncher {
     private val launchIntent = AtomicReference<Intent>(null)
@@ -132,25 +140,16 @@ class MainActivity : ComponentActivity(), IntentLauncher {
             LaunchedEffect(lifecycleState) {
                 if (lifecycleState == Lifecycle.State.RESUMED) {
                     viewModel.initialize { dismissSplashScreen.set(true) }
-                    viewModel.scanLibrary(false)
-                    when (launchIntent.getAndSet(null)?.action) {
-                        SHORTCUT_CONTINUE -> viewModel.playerManager.play()
-                        SHORTCUT_SHUFFLE -> {
-                            val playerManager = viewModel.playerManager
-                            val libraryIndex = viewModel.libraryIndex.value
-                            val preferences = viewModel.preferences.value
-                            val tracksTab = preferences.tabSettings[LibraryScreenTabType.TRACKS]!!
-                            playerManager.enableShuffle()
-                            playerManager.state.takeWhile { !it.shuffle }.collect()
-                            playerManager.setTracks(
-                                libraryIndex.tracks.values.sorted(
-                                    preferences.sortCollator,
-                                    tracksTab.sortingKeys,
-                                    tracksTab.sortAscending,
-                                ),
-                                null,
-                            )
-                        }
+                    val scanJob = viewModel.scanLibrary(false)
+                    launchIntent.getAndSet(null)?.let {
+                        handleIntent(
+                            uiManager,
+                            viewModel.playerManager,
+                            { viewModel.libraryIndex.value },
+                            viewModel.preferences.value,
+                            scanJob,
+                            it,
+                        )
                     }
                 }
             }
@@ -277,5 +276,72 @@ class MainActivity : ComponentActivity(), IntentLauncher {
                 }
             }
         startActivity(Intent.createChooser(shareIntent, null))
+    }
+
+    private suspend fun handleIntent(
+        uiManager: UiManager,
+        playerManager: PlayerManager,
+        libraryIndex: () -> LibraryIndex,
+        preferences: Preferences,
+        scanJob: Job,
+        intent: Intent,
+    ) {
+        when (intent.action) {
+            SHORTCUT_CONTINUE -> playerManager.play()
+            SHORTCUT_SHUFFLE -> {
+                val tracksTab = preferences.tabSettings[LibraryScreenTabType.TRACKS]!!
+                playerManager.enableShuffle()
+                playerManager.state.takeWhile { !it.shuffle }.collect()
+                playerManager.setTracks(
+                    libraryIndex()
+                        .tracks
+                        .values
+                        .sorted(
+                            preferences.sortCollator,
+                            tracksTab.sortingKeys,
+                            tracksTab.sortAscending,
+                        ),
+                    null,
+                )
+            }
+            ACTION_VIEW -> {
+                scanJob.join()
+
+                val id =
+                    try {
+                        if (intent.data?.scheme?.equals("content", true) == true) {
+                            ContentUris.parseId(intent.data!!)
+                        } else {
+                            null
+                        }
+                    } catch (_: Exception) {
+                        null
+                    }
+                val path = intent.data!!.path?.trimAndNormalize()
+                val fileName = FilenameUtils.getName(path).takeIf { it.isNotEmpty() }
+                Log.d("Phocid", "View intent: id=$id, path=$path (${intent.data})")
+
+                val libraryIndex = libraryIndex()
+                val track =
+                    libraryIndex.tracks[id]
+                        ?: if (fileName != null) {
+                            libraryIndex.tracks.values
+                                .mapNotNull {
+                                    if (it.fileName.equals(fileName, true)) {
+                                        it.path.commonSuffixWith(path!!, true).length to it
+                                    } else {
+                                        null
+                                    }
+                                }
+                                .maxByOrNull { it.first }
+                                ?.second
+                        } else null
+                if (track == null) {
+                    uiManager.toast(Strings[R.string.toast_view_intent_not_found])
+                } else {
+                    playerManager.setTracks(listOf(track), null)
+                }
+            }
+        }
     }
 }

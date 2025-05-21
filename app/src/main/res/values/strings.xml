@@ -306,6 +306,7 @@
     <string name="toast_timer_canceled">Canceled sleep timer</string>
     <string name="toast_timer_set">Playback will pause after ~{0, plural, one {# minute} other {# minutes}}</string>
     <string name="toast_track_queued">{0, plural, one {# track} other {# tracks}} queued</string>
+    <string name="toast_view_intent_not_found">No matching file in library</string>
 
     <string name="track_add_to_queue">Add to queue</string>
     <string name="track_details">Details</string>
