@@ -19,7 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
 import org.sunsetware.phocid.R
-import org.sunsetware.phocid.Strings
+import org.sunsetware.phocid.globals.Strings
 
 // Don't mark these functions as inline unless you want a "Compose internal error"
 

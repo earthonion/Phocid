@@ -47,10 +47,10 @@ import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import org.sunsetware.phocid.R
-import org.sunsetware.phocid.Strings
 import org.sunsetware.phocid.TNUM
 import org.sunsetware.phocid.data.Track
-import org.sunsetware.phocid.format
+import org.sunsetware.phocid.globals.Strings
+import org.sunsetware.phocid.globals.format
 import org.sunsetware.phocid.ui.components.LibraryListItemHorizontal
 import org.sunsetware.phocid.ui.components.OverflowMenu
 import org.sunsetware.phocid.ui.components.ProgressSlider

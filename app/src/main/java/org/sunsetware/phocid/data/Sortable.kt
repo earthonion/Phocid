@@ -8,7 +8,7 @@ import com.ibm.icu.util.ULocale
 import java.util.Date
 import kotlinx.serialization.Serializable
 import org.sunsetware.phocid.R
-import org.sunsetware.phocid.Strings
+import org.sunsetware.phocid.globals.Strings
 import org.sunsetware.phocid.utils.initialLetter
 
 /**

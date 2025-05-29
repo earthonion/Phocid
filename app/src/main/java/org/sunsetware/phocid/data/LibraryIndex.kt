@@ -24,6 +24,7 @@ import java.io.File
 import java.io.FileInputStream
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.atomic.AtomicLong
 import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
 import kotlin.math.floor
@@ -55,8 +56,8 @@ import org.sunsetware.omio.VORBIS_COMMENT_UNOFFICIAL_LYRICS
 import org.sunsetware.omio.readOpusMetadata
 import org.sunsetware.phocid.R
 import org.sunsetware.phocid.READ_PERMISSION
-import org.sunsetware.phocid.Strings
 import org.sunsetware.phocid.UNKNOWN
+import org.sunsetware.phocid.globals.Strings
 import org.sunsetware.phocid.utils.CaseInsensitiveMap
 import org.sunsetware.phocid.utils.ColorSerializer
 import org.sunsetware.phocid.utils.distinctCaseInsensitive
@@ -930,11 +931,19 @@ data class ArtistSlice(val artist: Artist, val tracks: List<Track> = emptyList()
     }
 }
 
-val EmptyTrackIndex = UnfilteredTrackIndex(null, mapOf())
+private val flowVersionCounter = AtomicLong(0)
 
 @Immutable
 @Serializable
-data class UnfilteredTrackIndex(val version: String?, val tracks: Map<Long, Track>) {
+data class UnfilteredTrackIndex(
+    val version: String?,
+    val tracks: Map<Long, Track>,
+    /**
+     * Automatically assigned monotonically increasing value, used for syncing updates between the
+     * flow of [UnfilteredTrackIndex] and [LibraryIndex].
+     */
+    @Transient val flowVersion: Long = flowVersionCounter.getAndIncrement(),
+) {
     fun getFolders(collator: Collator): Pair<Map<String, Folder>, String> {
         val folders = getFolders(tracks.values, collator)
         return folders to getRootFolder(folders)
@@ -951,6 +960,11 @@ data class LibraryIndex(
     val genres: CaseInsensitiveMap<Genre>,
     val folders: Map<String, Folder>,
     val defaultRootFolder: String,
+    /**
+     * Automatically assigned monotonically increasing value, used for syncing updates between the
+     * flow of [UnfilteredTrackIndex] and [LibraryIndex].
+     */
+    val flowVersion: Long,
 )
 
 fun LibraryIndex(
@@ -979,6 +993,7 @@ fun LibraryIndex(
         genres,
         folders,
         rootFolder,
+        unfilteredTrackIndex.flowVersion,
     )
 }
 

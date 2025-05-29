@@ -41,7 +41,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import org.sunsetware.phocid.R
-import org.sunsetware.phocid.Strings
+import org.sunsetware.phocid.globals.Strings
 import org.sunsetware.phocid.ui.theme.AnimatedContentEnter
 import org.sunsetware.phocid.ui.theme.AnimatedContentExit
 import org.sunsetware.phocid.ui.theme.INACTIVE_ALPHA

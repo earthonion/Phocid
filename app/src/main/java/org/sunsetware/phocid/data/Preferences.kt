@@ -15,6 +15,7 @@ import kotlin.math.PI
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import org.sunsetware.phocid.R
+import org.sunsetware.phocid.globals.SystemLocale
 import org.sunsetware.phocid.ui.theme.GRAY
 import org.sunsetware.phocid.ui.theme.Oklch
 import org.sunsetware.phocid.ui.theme.hashColor
@@ -25,8 +26,6 @@ import org.sunsetware.phocid.ui.views.library.LibraryScreenTabType
 import org.sunsetware.phocid.ui.views.library.LibraryTrackClickAction
 import org.sunsetware.phocid.ui.views.player.PlayerScreenLayoutType
 import org.sunsetware.phocid.utils.UUIDSerializer
-
-@Volatile var preferencesSystemLocale = Locale.getDefault()
 
 /**
  * Changes to this class should not change types of existing members, and new members must have a
@@ -150,7 +149,7 @@ data class Preferences(
     @Transient
     val sortCollator =
         (if (sortingLocale != null) Collator.getInstance(sortingLocale)
-            else Collator.getInstance(preferencesSystemLocale))
+            else Collator.getInstance(SystemLocale))
             .apply {
                 this.strength = Collator.PRIMARY
                 (this as RuleBasedCollator).numericCollation = true
@@ -160,7 +159,7 @@ data class Preferences(
     @Transient
     val searchCollator =
         (if (sortingLocale != null) Collator.getInstance(sortingLocale)
-            else Collator.getInstance(preferencesSystemLocale))
+            else Collator.getInstance(SystemLocale))
             .apply { this.strength = Collator.PRIMARY }
             .freeze() as RuleBasedCollator
 }

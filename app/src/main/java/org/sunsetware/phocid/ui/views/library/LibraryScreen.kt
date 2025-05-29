@@ -105,7 +105,6 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import org.sunsetware.phocid.MainViewModel
 import org.sunsetware.phocid.R
-import org.sunsetware.phocid.Strings
 import org.sunsetware.phocid.TNUM
 import org.sunsetware.phocid.data.ArtworkColorPreference
 import org.sunsetware.phocid.data.HighResArtworkPreference
@@ -114,6 +113,7 @@ import org.sunsetware.phocid.data.LibraryIndex
 import org.sunsetware.phocid.data.PlayerManager
 import org.sunsetware.phocid.data.SortingOption
 import org.sunsetware.phocid.data.sorted
+import org.sunsetware.phocid.globals.Strings
 import org.sunsetware.phocid.ui.components.AnimatedForwardBackwardTransition
 import org.sunsetware.phocid.ui.components.Artwork
 import org.sunsetware.phocid.ui.components.ArtworkCache
@@ -286,7 +286,7 @@ fun LibraryScreen(
         }
     val floatingToolbarItems =
         rememberFloatingToolbarItems(floatingToolbarDataSource, currentMultiSelectState)
-    val isScanningLibrary by viewModel.isScanningLibrary.collectAsStateWithLifecycle()
+    val isScanningLibrary by viewModel.libraryScanState.collectAsStateWithLifecycle()
     var scanSnackbarVisibility by remember { mutableStateOf(false) }
 
     LaunchedEffect(isScanningLibrary) {

@@ -19,12 +19,12 @@ import androidx.compose.runtime.Stable
 import androidx.compose.ui.graphics.vector.ImageVector
 import java.util.UUID
 import org.sunsetware.phocid.R
-import org.sunsetware.phocid.Strings
 import org.sunsetware.phocid.UiManager
 import org.sunsetware.phocid.data.PlayerManager
 import org.sunsetware.phocid.data.SpecialPlaylistLookup
 import org.sunsetware.phocid.data.Track
 import org.sunsetware.phocid.data.albumKey
+import org.sunsetware.phocid.globals.Strings
 import org.sunsetware.phocid.ui.views.library.LibraryTrackClickAction
 import org.sunsetware.phocid.ui.views.library.openAlbumCollectionView
 import org.sunsetware.phocid.ui.views.library.openArtistCollectionView

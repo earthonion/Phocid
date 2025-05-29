@@ -36,8 +36,8 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import org.sunsetware.phocid.R
-import org.sunsetware.phocid.Strings
 import org.sunsetware.phocid.data.Preferences
+import org.sunsetware.phocid.globals.Strings
 import org.sunsetware.phocid.ui.theme.EXIT_DURATION
 import org.sunsetware.phocid.ui.theme.INACTIVE_ALPHA
 import org.sunsetware.phocid.ui.theme.Typography

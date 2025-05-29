@@ -76,7 +76,6 @@ import kotlinx.coroutines.withContext
 import org.apache.commons.io.FilenameUtils
 import org.sunsetware.phocid.MainViewModel
 import org.sunsetware.phocid.R
-import org.sunsetware.phocid.Strings
 import org.sunsetware.phocid.TopLevelScreen
 import org.sunsetware.phocid.UNKNOWN
 import org.sunsetware.phocid.data.Preferences
@@ -84,6 +83,7 @@ import org.sunsetware.phocid.data.RealizedPlaylist
 import org.sunsetware.phocid.data.parseM3u
 import org.sunsetware.phocid.data.sortedBy
 import org.sunsetware.phocid.data.toM3u
+import org.sunsetware.phocid.globals.Strings
 import org.sunsetware.phocid.ui.components.EmptyListIndicator
 import org.sunsetware.phocid.ui.components.SingleLineText
 import org.sunsetware.phocid.ui.components.UtilityCheckBoxListItem

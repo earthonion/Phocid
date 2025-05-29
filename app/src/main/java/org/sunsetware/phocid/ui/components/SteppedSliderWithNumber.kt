@@ -17,8 +17,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import org.sunsetware.phocid.R
-import org.sunsetware.phocid.Strings
 import org.sunsetware.phocid.TNUM
+import org.sunsetware.phocid.globals.Strings
 import org.sunsetware.phocid.ui.theme.Typography
 
 @Composable

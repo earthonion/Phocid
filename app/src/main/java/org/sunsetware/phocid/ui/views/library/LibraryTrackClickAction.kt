@@ -8,10 +8,10 @@ import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.ui.graphics.vector.ImageVector
 import kotlinx.serialization.Serializable
 import org.sunsetware.phocid.R
-import org.sunsetware.phocid.Strings
 import org.sunsetware.phocid.UiManager
 import org.sunsetware.phocid.data.PlayerManager
 import org.sunsetware.phocid.data.Track
+import org.sunsetware.phocid.globals.Strings
 import org.sunsetware.phocid.utils.icuFormat
 
 @Serializable

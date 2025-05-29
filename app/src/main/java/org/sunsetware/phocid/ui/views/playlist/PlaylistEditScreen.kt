@@ -50,12 +50,12 @@ import org.apache.commons.io.FilenameUtils
 import org.sunsetware.phocid.Dialog
 import org.sunsetware.phocid.MainViewModel
 import org.sunsetware.phocid.R
-import org.sunsetware.phocid.Strings
 import org.sunsetware.phocid.TopLevelScreen
 import org.sunsetware.phocid.UNKNOWN
 import org.sunsetware.phocid.data.InvalidTrack
 import org.sunsetware.phocid.data.Track
 import org.sunsetware.phocid.data.sortedBy
+import org.sunsetware.phocid.globals.Strings
 import org.sunsetware.phocid.ui.components.Artwork
 import org.sunsetware.phocid.ui.components.ArtworkImage
 import org.sunsetware.phocid.ui.components.DialogBase

@@ -28,20 +28,17 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import org.sunsetware.phocid.data.EmptyTrackIndex
-import org.sunsetware.phocid.data.PlayerState
-import org.sunsetware.phocid.data.SaveManager
-import org.sunsetware.phocid.data.UnfilteredTrackIndex
 import org.sunsetware.phocid.data.capturePlayerState
-import org.sunsetware.phocid.data.loadCbor
 import org.sunsetware.phocid.data.restorePlayerState
+import org.sunsetware.phocid.globals.GlobalData
 import org.sunsetware.phocid.service.CustomizedBitmapLoader
 import org.sunsetware.phocid.service.CustomizedPlayer
 import org.sunsetware.phocid.utils.Random
@@ -49,9 +46,7 @@ import org.sunsetware.phocid.utils.Random
 @OptIn(UnstableApi::class)
 class PlaybackService : MediaSessionService() {
     private var mediaSession: MediaSession? = null
-    private val coroutineScope = MainScope()
-    private val stateFlow = MutableStateFlow<PlayerState>(PlayerState())
-    private var saveManager: SaveManager<PlayerState>? = null
+    private val mainScope = MainScope()
     private val timerMutex = Mutex()
     @Volatile private var timerTarget = -1L
     @Volatile private var timerJob = null as Job?
@@ -63,6 +58,9 @@ class PlaybackService : MediaSessionService() {
 
     override fun onCreate() {
         super.onCreate()
+        while (!GlobalData.initialized.get()) {
+            Thread.sleep(1)
+        }
 
         val player = CustomizedPlayer(this)
 
@@ -75,17 +73,28 @@ class PlaybackService : MediaSessionService() {
         )
         player.addListener(createListener(player))
 
+        // Register listener for auto playback on device connection.
+        // Must register before restoring the state, or it'll unexpectedly start playback
+        // on app startup.
+        getSystemService(AudioManager::class.java)
+            .registerAudioDeviceCallback(audioDeviceCallback, null)
+
         // Restore state.
-        val unfilteredTrackIndex =
-            loadCbor<UnfilteredTrackIndex>(
-                application.applicationContext,
-                TRACK_INDEX_FILE_NAME,
-                false,
-            ) ?: EmptyTrackIndex
-        val state =
-            loadCbor<PlayerState>(this, PLAYER_STATE_FILE_NAME, isCache = false) ?: PlayerState()
-        stateFlow.update { state }
-        player.restorePlayerState(state, unfilteredTrackIndex)
+        player.restorePlayerState(
+            GlobalData.playerState.value,
+            GlobalData.unfilteredTrackIndex.value,
+        )
+        mainScope.launch {
+            GlobalData.preferences
+                .onEach { preferences ->
+                    playOnOutputDeviceConnection = preferences.playOnOutputDeviceConnection
+                    player.setAudioAttributes(player.audioAttributes, preferences.pauseOnFocusLoss)
+                    audioOffloading = preferences.audioOffloading
+                    player.updateAudioOffloading(audioOffloading)
+                    reshuffleOnRepeat = preferences.reshuffleOnRepeat
+                }
+                .collect()
+        }
 
         mediaSession =
             MediaSession.Builder(this, player)
@@ -98,22 +107,11 @@ class PlaybackService : MediaSessionService() {
                     )
                 )
                 .setCallback(
-                    createMediaSessionCallback(
-                        player,
-                        mapOf(
-                            SET_TIMER_COMMAND to ::onSetTimer,
-                            SET_PLAYBACK_PREFERENCE_COMMAND to ::onSetPlaybackPreference,
-                        ),
-                    )
+                    createMediaSessionCallback(player, mapOf(SET_TIMER_COMMAND to ::onSetTimer))
                 )
                 .setBitmapLoader(CustomizedBitmapLoader(this))
                 .setSessionExtras(bundleOf(AUDIO_SESSION_ID_KEY to player.inner.audioSessionId))
                 .build()
-
-        getSystemService(AudioManager::class.java)
-            .registerAudioDeviceCallback(audioDeviceCallback, null)
-
-        saveManager = SaveManager(this, coroutineScope, stateFlow, PLAYER_STATE_FILE_NAME, false)
     }
 
     override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaSession? {
@@ -130,8 +128,7 @@ class PlaybackService : MediaSessionService() {
             release()
             mediaSession = null
         }
-        saveManager?.close()
-        coroutineScope.cancel()
+        mainScope.cancel()
         super.onDestroy()
     }
 
@@ -140,7 +137,7 @@ class PlaybackService : MediaSessionService() {
     private fun createListener(player: CustomizedPlayer): Player.Listener {
         return object : Player.Listener {
             override fun onEvents(player: Player, events: Player.Events) {
-                stateFlow.update { player.capturePlayerState() }
+                GlobalData.playerState.update { player.capturePlayerState() }
 
                 if (
                     events.containsAny(
@@ -242,7 +239,7 @@ class PlaybackService : MediaSessionService() {
     // region Commands
 
     private fun newTimerJob(player: Player): Job {
-        return coroutineScope.launch {
+        return mainScope.launch {
             while (isActive) {
                 timerMutex.withLock {
                     if (
@@ -281,21 +278,6 @@ class PlaybackService : MediaSessionService() {
                 timerJob = newTimerJob(player)
             }
         }
-    }
-
-    private fun onSetPlaybackPreference(
-        player: CustomizedPlayer,
-        @Suppress("unused") session: MediaSession,
-        args: Bundle,
-    ) {
-        playOnOutputDeviceConnection = args.getBoolean(PLAY_ON_OUTPUT_DEVICE_CONNECTION_KEY, false)
-        player.setAudioAttributes(
-            player.audioAttributes,
-            args.getBoolean(PAUSE_ON_FOCUS_LOSS, true),
-        )
-        audioOffloading = args.getBoolean(AUDIO_OFFLOADING_KEY, true)
-        reshuffleOnRepeat = args.getBoolean(RESHUFFLE_ON_REPEAT_KEY, false)
-        player.updateAudioOffloading(audioOffloading)
     }
 
     // endregion

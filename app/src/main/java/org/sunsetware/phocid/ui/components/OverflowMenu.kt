@@ -22,7 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import org.sunsetware.phocid.R
-import org.sunsetware.phocid.Strings
+import org.sunsetware.phocid.globals.Strings
 import org.sunsetware.phocid.ui.views.MenuItem
 
 @Composable

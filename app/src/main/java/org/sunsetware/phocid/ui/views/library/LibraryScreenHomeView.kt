@@ -63,7 +63,6 @@ import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import org.sunsetware.phocid.MainViewModel
 import org.sunsetware.phocid.R
-import org.sunsetware.phocid.Strings
 import org.sunsetware.phocid.data.Album
 import org.sunsetware.phocid.data.AlbumArtist
 import org.sunsetware.phocid.data.Artist
@@ -84,7 +83,8 @@ import org.sunsetware.phocid.data.hintBy
 import org.sunsetware.phocid.data.search
 import org.sunsetware.phocid.data.sorted
 import org.sunsetware.phocid.data.sortedBy
-import org.sunsetware.phocid.format
+import org.sunsetware.phocid.globals.Strings
+import org.sunsetware.phocid.globals.format
 import org.sunsetware.phocid.ui.components.Artwork
 import org.sunsetware.phocid.ui.components.ArtworkImage
 import org.sunsetware.phocid.ui.components.DefaultPagerState

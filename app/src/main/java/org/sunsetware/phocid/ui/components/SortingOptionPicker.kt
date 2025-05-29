@@ -12,9 +12,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import org.sunsetware.phocid.R
-import org.sunsetware.phocid.Strings
 import org.sunsetware.phocid.UNKNOWN
 import org.sunsetware.phocid.data.SortingOption
+import org.sunsetware.phocid.globals.Strings
 
 @Composable
 inline fun SortingOptionPicker(

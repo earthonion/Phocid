@@ -64,7 +64,6 @@ import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import org.sunsetware.phocid.MainViewModel
 import org.sunsetware.phocid.R
-import org.sunsetware.phocid.Strings
 import org.sunsetware.phocid.UiManager
 import org.sunsetware.phocid.data.InvalidTrack
 import org.sunsetware.phocid.data.LibraryIndex
@@ -75,6 +74,7 @@ import org.sunsetware.phocid.data.Track
 import org.sunsetware.phocid.data.getArtworkColor
 import org.sunsetware.phocid.data.loadLyrics
 import org.sunsetware.phocid.data.parseLrc
+import org.sunsetware.phocid.globals.Strings
 import org.sunsetware.phocid.ui.components.BinaryDragState
 import org.sunsetware.phocid.ui.components.DragLock
 import org.sunsetware.phocid.ui.theme.LocalThemeAccent

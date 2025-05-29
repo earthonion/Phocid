@@ -2,7 +2,7 @@
 
 package org.sunsetware.phocid.data
 
-import android.content.Context
+import android.app.Application
 import android.net.Uri
 import android.util.Log
 import android.widget.Toast
@@ -39,7 +39,7 @@ import kotlinx.serialization.Serializable
 import org.apache.commons.io.FilenameUtils
 import org.sunsetware.phocid.PLAYLISTS_FILE_NAME
 import org.sunsetware.phocid.R
-import org.sunsetware.phocid.Strings
+import org.sunsetware.phocid.globals.Strings
 import org.sunsetware.phocid.utils.CaseInsensitiveMap
 import org.sunsetware.phocid.utils.UUIDSerializer
 import org.sunsetware.phocid.utils.combine
@@ -70,21 +70,13 @@ val SpecialPlaylistLookup = SpecialPlaylist.entries.associateBy { it.key }
 
 @Stable
 class PlaylistManager(
-    private val context: Context,
+    private val context: Application,
     private val coroutineScope: CoroutineScope,
     private val preferences: StateFlow<Preferences>,
     private val libraryIndex: StateFlow<LibraryIndex>,
 ) : AutoCloseable {
-    private val _playlists = MutableStateFlow(mapOf(SpecialPlaylist.FAVORITES.key to Playlist("")))
-    val playlists =
-        _playlists.combine(
-            coroutineScope,
-            libraryIndex.map(coroutineScope) { libraryIndex ->
-                libraryIndex.tracks.values.associateBy { it.path }
-            },
-        ) { playlists, trackIndex ->
-            playlists.mapValues { it.value.realize(SpecialPlaylistLookup[it.key], trackIndex) }
-        }
+    private lateinit var _playlists: MutableStateFlow<Map<UUID, Playlist>>
+    lateinit var playlists: StateFlow<Map<UUID, RealizedPlaylist>>
     private lateinit var saveManager: SaveManager<Map<String, Playlist>>
     private lateinit var syncJob: Job
 
@@ -94,9 +86,21 @@ class PlaylistManager(
     val syncLog = _syncLog.asStateFlow()
 
     fun initialize() {
-        loadCbor<Map<String, Playlist>>(context, PLAYLISTS_FILE_NAME, false)?.let { playlists ->
-            _playlists.update { playlists.mapKeys { UUID.fromString(it.key) } }
-        }
+        _playlists =
+            MutableStateFlow(
+                loadCbor<Map<String, Playlist>>(context, PLAYLISTS_FILE_NAME, false)?.mapKeys {
+                    UUID.fromString(it.key)
+                } ?: mapOf(SpecialPlaylist.FAVORITES.key to Playlist(""))
+            )
+        playlists =
+            _playlists.combine(
+                coroutineScope,
+                libraryIndex.map(coroutineScope) { libraryIndex ->
+                    libraryIndex.tracks.values.associateBy { it.path }
+                },
+            ) { playlists, trackIndex ->
+                playlists.mapValues { it.value.realize(SpecialPlaylistLookup[it.key], trackIndex) }
+            }
         saveManager =
             SaveManager(
                 context,

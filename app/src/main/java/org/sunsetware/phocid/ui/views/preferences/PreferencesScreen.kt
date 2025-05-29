@@ -45,7 +45,6 @@ import java.util.Locale
 import org.sunsetware.phocid.BuildConfig
 import org.sunsetware.phocid.MainViewModel
 import org.sunsetware.phocid.R
-import org.sunsetware.phocid.Strings
 import org.sunsetware.phocid.TopLevelScreen
 import org.sunsetware.phocid.data.ArtworkColorPreference
 import org.sunsetware.phocid.data.DarkThemePreference
@@ -53,6 +52,7 @@ import org.sunsetware.phocid.data.HighResArtworkPreference
 import org.sunsetware.phocid.data.LyricsDisplayPreference
 import org.sunsetware.phocid.data.ShapePreference
 import org.sunsetware.phocid.data.TabStylePreference
+import org.sunsetware.phocid.globals.Strings
 import org.sunsetware.phocid.ui.components.UtilityListHeader
 import org.sunsetware.phocid.ui.components.UtilityListItem
 import org.sunsetware.phocid.ui.components.UtilitySwitchListItem

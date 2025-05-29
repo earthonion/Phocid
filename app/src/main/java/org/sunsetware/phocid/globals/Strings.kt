@@ -1,26 +1,14 @@
-package org.sunsetware.phocid
+package org.sunsetware.phocid.globals
 
-import android.content.Context
 import android.util.Log
 import androidx.compose.runtime.Stable
-import java.lang.ref.WeakReference
 import kotlin.time.Duration
+import org.sunsetware.phocid.R
 import org.sunsetware.phocid.utils.icuFormat
 
-/**
- * I would argue littering [Context] randomly everywhere is a bigger code smell than a static
- * singleton.
- */
 @Stable
-object Strings {
-    @Stable
-    operator fun get(id: Int): String {
-        return stringSource.get()?.getString(id)
-            ?: run {
-                Log.e("Phocid", "Accessing string resource $id after context disposal")
-                "<error>"
-            }
-    }
+interface StringSource {
+    @Stable operator fun get(id: Int): String
 
     @Stable
     fun conjoin(strings: Iterable<String?>): String {
@@ -43,6 +31,16 @@ object Strings {
     }
 }
 
+/** This is only meant to be set by [org.sunsetware.phocid.MainApplication]! */
+@Volatile
+var Strings =
+    object : StringSource {
+        override fun get(id: Int): String {
+            Log.e("Phocid", "Accessing string resource $id before initialization")
+            return "<error>"
+        }
+    }
+
 fun Duration.format(): String {
     return absoluteValue.toComponents { hours, minutes, seconds, _ ->
         if (isNegative()) {
@@ -60,5 +58,3 @@ fun Duration.format(): String {
         }
     }
 }
-
-@Volatile var stringSource = WeakReference<Context>(null)

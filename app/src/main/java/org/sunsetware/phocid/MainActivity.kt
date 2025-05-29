@@ -13,6 +13,7 @@ import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.viewModels
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
@@ -35,7 +36,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.compose.currentStateAsState
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.lifecycle.viewModelScope
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
@@ -43,19 +44,20 @@ import com.ibm.icu.util.ULocale
 import java.lang.ref.WeakReference
 import java.net.URLConnection
 import java.util.Locale
-import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.takeWhile
+import kotlinx.coroutines.launch
 import org.apache.commons.io.FilenameUtils
 import org.sunsetware.phocid.data.LibraryIndex
 import org.sunsetware.phocid.data.PlayerManager
 import org.sunsetware.phocid.data.Preferences
 import org.sunsetware.phocid.data.Track
 import org.sunsetware.phocid.data.getArtworkColor
-import org.sunsetware.phocid.data.preferencesSystemLocale
 import org.sunsetware.phocid.data.sorted
+import org.sunsetware.phocid.globals.Strings
+import org.sunsetware.phocid.globals.SystemLocale
 import org.sunsetware.phocid.ui.components.AnimatedForwardBackwardTransition
 import org.sunsetware.phocid.ui.components.DragLock
 import org.sunsetware.phocid.ui.theme.PhocidTheme
@@ -72,10 +74,11 @@ class MainActivity : ComponentActivity(), IntentLauncher {
 
     @OptIn(ExperimentalPermissionsApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
+        val viewModel by viewModels<MainViewModel>()
+        viewModel.initialize()
         launchIntent.set(intent)
-        val dismissSplashScreen = AtomicBoolean(false)
 
-        installSplashScreen().setKeepOnScreenCondition { !dismissSplashScreen.get() }
+        installSplashScreen().setKeepOnScreenCondition { !viewModel.initialized.value }
         enableEdgeToEdge(
             statusBarStyle = SystemBarStyle.auto(Color.TRANSPARENT, Color.TRANSPARENT),
             navigationBarStyle = SystemBarStyle.auto(Color.TRANSPARENT, Color.TRANSPARENT),
@@ -83,7 +86,7 @@ class MainActivity : ComponentActivity(), IntentLauncher {
         window.isNavigationBarContrastEnforced = false
 
         // Set locale to the actual locale displayed, or the user might see funny formatting
-        preferencesSystemLocale = requireNotNull(LocaleListCompat.getDefault()[0])
+        SystemLocale = requireNotNull(LocaleListCompat.getDefault()[0])
         val resourceLocaleTag = Strings[R.string.locale]
         val resourceLocale = Locale.forLanguageTag(resourceLocaleTag)
         val systemLocale = LocaleListCompat.getDefault().getFirstMatch(arrayOf(resourceLocaleTag))
@@ -94,95 +97,101 @@ class MainActivity : ComponentActivity(), IntentLauncher {
         super.onCreate(savedInstanceState)
 
         setContent {
-            val lifecycleState by LocalLifecycleOwner.current.lifecycle.currentStateAsState()
-            val coroutineScope = rememberCoroutineScope()
-            val viewModel = viewModel<MainViewModel>()
             val initialized by viewModel.initialized.collectAsStateWithLifecycle()
-            var permissionGranted by remember { mutableStateOf(false) }
-            val permissions =
-                rememberMultiplePermissionsState(
-                    listOfNotNull(READ_PERMISSION),
-                    onPermissionsResult = { result -> permissionGranted = result.all { it.value } },
-                )
-            permissionGranted = permissions.permissions.all { it.status.isGranted }
 
-            val uiManager = viewModel.uiManager
-            val topLevelScreenStack by uiManager.topLevelScreenStack.collectAsStateWithLifecycle()
-            val dialog by uiManager.dialog.collectAsStateWithLifecycle()
-            val backHandlerEnabled by uiManager.backHandlerEnabled.collectAsStateWithLifecycle()
-            // Don't put locks in ViewModel, as they should be reset after activity recreation.
-            val playerScreenOpenDragLock = remember { DragLock() }
-            val playerScreenCloseDragLock = remember { DragLock() }
-            val playerScreenDragState = uiManager.playerScreenDragState
-            playerScreenDragState.coroutineScope = WeakReference(coroutineScope)
-            val overrideStatusBarLightColor by
-                uiManager.overrideStatusBarLightColor.collectAsStateWithLifecycle()
+            if (initialized) {
+                val lifecycleState by LocalLifecycleOwner.current.lifecycle.currentStateAsState()
+                val coroutineScope = rememberCoroutineScope()
 
-            viewModel.uiManager.intentLauncher = WeakReference(this)
+                var permissionGranted by remember { mutableStateOf(false) }
+                val permissions =
+                    rememberMultiplePermissionsState(
+                        listOfNotNull(READ_PERMISSION),
+                        onPermissionsResult = { result ->
+                            permissionGranted = result.all { it.value }
+                        },
+                    )
+                permissionGranted = permissions.permissions.all { it.status.isGranted }
 
-            val preferences by viewModel.preferences.collectAsStateWithLifecycle()
+                val uiManager = viewModel.uiManager
+                val topLevelScreenStack by
+                    uiManager.topLevelScreenStack.collectAsStateWithLifecycle()
+                val dialog by uiManager.dialog.collectAsStateWithLifecycle()
+                val backHandlerEnabled by uiManager.backHandlerEnabled.collectAsStateWithLifecycle()
+                // Don't put locks in ViewModel, as they should be reset after activity recreation.
+                val playerScreenOpenDragLock = remember { DragLock() }
+                val playerScreenCloseDragLock = remember { DragLock() }
+                val playerScreenDragState = uiManager.playerScreenDragState
+                playerScreenDragState.coroutineScope = WeakReference(coroutineScope)
+                val overrideStatusBarLightColor by
+                    uiManager.overrideStatusBarLightColor.collectAsStateWithLifecycle()
 
-            val currentTrackColor by
-                remember {
-                        viewModel.playerManager.state.combine(
-                            coroutineScope,
-                            viewModel.libraryIndex,
-                            viewModel.preferences,
-                        ) { state, library, preferences ->
-                            if (state.actualPlayQueue.isEmpty()) null
-                            else
-                                library.tracks[state.actualPlayQueue[state.currentIndex]]
-                                    ?.getArtworkColor(preferences.artworkColorPreference)
+                viewModel.uiManager.intentLauncher = WeakReference(this)
+
+                val preferences by viewModel.preferences.collectAsStateWithLifecycle()
+
+                val currentTrackColor by
+                    remember {
+                            viewModel.playerManager.state.combine(
+                                coroutineScope,
+                                viewModel.libraryIndex,
+                                viewModel.preferences,
+                            ) { state, library, preferences ->
+                                if (state.actualPlayQueue.isEmpty()) null
+                                else
+                                    library.tracks[state.actualPlayQueue[state.currentIndex]]
+                                        ?.getArtworkColor(preferences.artworkColorPreference)
+                            }
+                        }
+                        .collectAsStateWithLifecycle()
+
+                LaunchedEffect(lifecycleState) {
+                    if (lifecycleState == Lifecycle.State.RESUMED) {
+                        val scanJob = viewModel.scanLibrary(false)
+                        viewModel.viewModelScope.launch {
+                            launchIntent.getAndSet(null)?.let {
+                                handleIntent(
+                                    viewModel.uiManager,
+                                    viewModel.playerManager,
+                                    { viewModel.libraryIndex.value },
+                                    viewModel.preferences.value,
+                                    scanJob,
+                                    it,
+                                )
+                            }
                         }
                     }
-                    .collectAsStateWithLifecycle()
+                }
 
-            LaunchedEffect(lifecycleState) {
-                if (lifecycleState == Lifecycle.State.RESUMED) {
-                    viewModel.initialize { dismissSplashScreen.set(true) }
-                    val scanJob = viewModel.scanLibrary(false)
-                    launchIntent.getAndSet(null)?.let {
-                        handleIntent(
-                            uiManager,
-                            viewModel.playerManager,
-                            { viewModel.libraryIndex.value },
-                            viewModel.preferences.value,
-                            scanJob,
-                            it,
+                LaunchedEffect(permissionGranted) {
+                    if (!permissionGranted) {
+                        uiManager.openDialog(
+                            PermissionRequestDialog(
+                                permissions = permissions,
+                                onPermissionGranted = { viewModel.scanLibrary(false) },
+                            )
                         )
                     }
                 }
-            }
-            LaunchedEffect(permissionGranted) {
-                if (!permissionGranted) {
-                    uiManager.openDialog(PermissionRequestDialog(permissions))
-                } else {
-                    uiManager.closeDialog()
-                }
-            }
-            LaunchedEffect(permissionGranted) {
-                if (permissionGranted) viewModel.scanLibrary(false)
-            }
 
-            BackHandler(backHandlerEnabled) { uiManager.back() }
+                BackHandler(backHandlerEnabled) { uiManager.back() }
 
-            PhocidTheme(
-                themeColorSource = preferences.themeColorSource,
-                customThemeColor = preferences.customThemeColor,
-                overrideThemeColor =
-                    if (preferences.coloredGlobalTheme) currentTrackColor else null,
-                darkTheme = preferences.darkTheme.boolean ?: isSystemInDarkTheme(),
-                pureBackgroundColor = preferences.pureBackgroundColor,
-                overrideStatusBarLightColor = overrideStatusBarLightColor,
-                densityMultiplier = preferences.densityMultiplier,
-            ) {
-                Box(
-                    modifier =
-                        Modifier.background(MaterialTheme.colorScheme.surface).onSizeChanged {
-                            playerScreenDragState.length = it.height.toFloat()
-                        }
+                PhocidTheme(
+                    themeColorSource = preferences.themeColorSource,
+                    customThemeColor = preferences.customThemeColor,
+                    overrideThemeColor =
+                        if (preferences.coloredGlobalTheme) currentTrackColor else null,
+                    darkTheme = preferences.darkTheme.boolean ?: isSystemInDarkTheme(),
+                    pureBackgroundColor = preferences.pureBackgroundColor,
+                    overrideStatusBarLightColor = overrideStatusBarLightColor,
+                    densityMultiplier = preferences.densityMultiplier,
                 ) {
-                    if (initialized) {
+                    Box(
+                        modifier =
+                            Modifier.background(MaterialTheme.colorScheme.surface).onSizeChanged {
+                                playerScreenDragState.length = it.height.toFloat()
+                            }
+                    ) {
                         AnimatedForwardBackwardTransition(topLevelScreenStack) { screen ->
                             when (screen) {
                                 null -> {
@@ -332,7 +341,6 @@ class MainActivity : ComponentActivity(), IntentLauncher {
                     if (fileName == null) {
                         uiManager.toast(Strings[R.string.toast_view_intent_not_found])
                     } else {
-
                         var track =
                             libraryIndex().tracks.values.firstOrNull {
                                 it.fileName.equals(fileName, true) && it.size == size

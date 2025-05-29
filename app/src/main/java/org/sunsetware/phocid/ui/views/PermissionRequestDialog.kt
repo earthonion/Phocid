@@ -7,6 +7,7 @@ import android.content.ContextWrapper
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -17,11 +18,14 @@ import com.google.accompanist.permissions.MultiplePermissionsState
 import org.sunsetware.phocid.Dialog
 import org.sunsetware.phocid.MainViewModel
 import org.sunsetware.phocid.R
-import org.sunsetware.phocid.Strings
+import org.sunsetware.phocid.globals.Strings
 import org.sunsetware.phocid.ui.components.DialogBase
 
 @Stable
-class PermissionRequestDialog(private val permissions: MultiplePermissionsState) : Dialog() {
+class PermissionRequestDialog(
+    private val permissions: MultiplePermissionsState,
+    private val onPermissionGranted: () -> Unit,
+) : Dialog() {
     @Composable
     override fun Compose(viewModel: MainViewModel) {
         val context = LocalContext.current
@@ -45,6 +49,13 @@ class PermissionRequestDialog(private val permissions: MultiplePermissionsState)
                 Strings[R.string.permission_dialog_body],
                 modifier = Modifier.padding(horizontal = 24.dp),
             )
+
+            LaunchedEffect(permissions.allPermissionsGranted) {
+                if (permissions.allPermissionsGranted) {
+                    onPermissionGranted()
+                    viewModel.uiManager.closeDialog()
+                }
+            }
         }
     }
 }
