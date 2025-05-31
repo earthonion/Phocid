@@ -53,6 +53,7 @@ import org.sunsetware.phocid.R
 import org.sunsetware.phocid.TopLevelScreen
 import org.sunsetware.phocid.UNKNOWN
 import org.sunsetware.phocid.data.InvalidTrack
+import org.sunsetware.phocid.data.RealizedPlaylistEntry
 import org.sunsetware.phocid.data.Track
 import org.sunsetware.phocid.data.sortedBy
 import org.sunsetware.phocid.globals.Strings
@@ -89,21 +90,29 @@ class PlaylistEditScreen(private val playlistKey: UUID) : TopLevelScreen() {
                 }
                 .collectAsState(playlist?.displayName)
 
+        var reorderingPlaylist by remember { mutableStateOf(null as List<RealizedPlaylistEntry>?) }
+        var reorderInfo by remember { mutableStateOf(null as Pair<Int, Int>?) }
         val reorderableLazyListState =
             rememberReorderableLazyListState(lazyListState) { from, to ->
                 ViewCompat.performHapticFeedback(
                     view,
                     HapticFeedbackConstantsCompat.SEGMENT_FREQUENT_TICK,
                 )
-                playlistManager.updatePlaylist(playlistKey) {
-                    it.copy(
-                        entries =
-                            it.entries.toMutableList().apply { add(to.index, removeAt(from.index)) }
-                    )
+                if (playlist != null) {
+                    reorderInfo =
+                        if (reorderInfo == null)
+                            playlist.entries.indexOfFirst { it.key == from.key } to to.index
+                        else reorderInfo!!.first to to.index
+
+                    reorderingPlaylist =
+                        reorderingPlaylist?.toMutableList()?.apply {
+                            add(to.index, removeAt(from.index))
+                        }
                 }
             }
 
         LaunchedEffect(playlist) {
+            reorderingPlaylist = null
             if (playlist == null) {
                 uiManager.closeTopLevelScreen(this@PlaylistEditScreen)
             }
@@ -166,9 +175,10 @@ class PlaylistEditScreen(private val playlistKey: UUID) : TopLevelScreen() {
             ) {
                 Scrollbar(lazyListState, { (it + 1).toString() }) {
                     LazyColumn(state = lazyListState, modifier = Modifier.fillMaxSize()) {
-                        itemsIndexed(playlist?.entries ?: emptyList(), { _, entry -> entry.key }) {
-                            index,
-                            entry ->
+                        itemsIndexed(
+                            reorderingPlaylist ?: playlist?.entries ?: emptyList(),
+                            { _, entry -> entry.key },
+                        ) { index, entry ->
                             ReorderableItem(
                                 reorderableLazyListState,
                                 entry.key,
@@ -270,6 +280,8 @@ class PlaylistEditScreen(private val playlistKey: UUID) : TopLevelScreen() {
                                                             view,
                                                             HapticFeedbackConstantsCompat.DRAG_START,
                                                         )
+                                                        reorderInfo = null
+                                                        reorderingPlaylist = playlist?.entries
                                                     },
                                                     onDragStopped = {
                                                         ViewCompat.performHapticFeedback(
@@ -277,6 +289,23 @@ class PlaylistEditScreen(private val playlistKey: UUID) : TopLevelScreen() {
                                                             HapticFeedbackConstantsCompat
                                                                 .GESTURE_END,
                                                         )
+                                                        reorderInfo?.let { (from, to) ->
+                                                            playlistManager.updatePlaylist(
+                                                                playlistKey
+                                                            ) {
+                                                                it.copy(
+                                                                    entries =
+                                                                        it.entries
+                                                                            .toMutableList()
+                                                                            .apply {
+                                                                                add(
+                                                                                    to,
+                                                                                    removeAt(from),
+                                                                                )
+                                                                            }
+                                                                )
+                                                            }
+                                                        }
                                                     },
                                                 )
                                     )

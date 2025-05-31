@@ -117,7 +117,7 @@ class PlayerScreenQueueDefaultBase(
                 playQueue.drop(currentTrackIndex + 1).sumOfDuration { it.second.duration }.format()
             }
 
-        var reorderableQueue by remember { mutableStateOf(null as List<Pair<Any, Track>>?) }
+        var reorderingQueue by remember { mutableStateOf(null as List<Pair<Any, Track>>?) }
         var reorderInfo by remember { mutableStateOf(null as Pair<Int, Int>?) }
         val reorderableLazyListState =
             rememberReorderableLazyListState(lazyListState) { from, to ->
@@ -130,11 +130,11 @@ class PlayerScreenQueueDefaultBase(
                         playQueue.indexOfFirst { it.first == from.key } to to.index
                     else reorderInfo!!.first to to.index
 
-                reorderableQueue =
-                    reorderableQueue?.toMutableList()?.apply { add(to.index, removeAt(from.index)) }
+                reorderingQueue =
+                    reorderingQueue?.toMutableList()?.apply { add(to.index, removeAt(from.index)) }
             }
 
-        LaunchedEffect(playQueue) { reorderableQueue = null }
+        LaunchedEffect(playQueue) { reorderingQueue = null }
 
         Surface(
             modifier = Modifier.fillMaxHeight(),
@@ -164,7 +164,7 @@ class PlayerScreenQueueDefaultBase(
                         state = lazyListState,
                         modifier = Modifier.fillMaxSize().nestedScroll(nestedScrollConnection),
                     ) {
-                        itemsIndexed(reorderableQueue ?: playQueue, { _, (key, _) -> key }) {
+                        itemsIndexed(reorderingQueue ?: playQueue, { _, (key, _) -> key }) {
                             index,
                             (key, track) ->
                             ReorderableItem(
@@ -213,7 +213,7 @@ class PlayerScreenQueueDefaultBase(
                                                             HapticFeedbackConstantsCompat.DRAG_START,
                                                         )
                                                         reorderInfo = null
-                                                        reorderableQueue = playQueue
+                                                        reorderingQueue = playQueue
                                                     },
                                                     onDragStopped = {
                                                         ViewCompat.performHapticFeedback(

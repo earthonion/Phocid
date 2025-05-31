@@ -14,8 +14,12 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.HapticFeedbackConstantsCompat
@@ -27,6 +31,7 @@ import org.sunsetware.phocid.R
 import org.sunsetware.phocid.globals.Strings
 import org.sunsetware.phocid.ui.components.DialogBase
 import org.sunsetware.phocid.ui.components.UtilityCheckBoxListItem
+import org.sunsetware.phocid.ui.views.library.LibraryScreenTabType
 import org.sunsetware.phocid.utils.swap
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
@@ -41,30 +46,37 @@ class PreferencesTabsDialog() : Dialog() {
 
         val preferences by viewModel.preferences.collectAsStateWithLifecycle()
 
+        var reorderingTabs by remember {
+            mutableStateOf(null as List<Pair<LibraryScreenTabType, Boolean>>?)
+        }
+        var reorderInfo by remember { mutableStateOf(null as Pair<Int, Int>?) }
         val reorderableLazyListState =
             rememberReorderableLazyListState(lazyListState) { from, to ->
                 ViewCompat.performHapticFeedback(
                     view,
                     HapticFeedbackConstantsCompat.SEGMENT_FREQUENT_TICK,
                 )
-                viewModel.updatePreferences {
-                    it.copy(
-                        tabOrderAndVisibility =
-                            it.tabOrderAndVisibility.toMutableList().apply {
-                                add(to.index, removeAt(from.index))
-                            }
-                    )
-                }
+                reorderInfo =
+                    if (reorderInfo == null)
+                        preferences.tabOrderAndVisibility.indexOfFirst { it.first == from.key } to
+                            to.index
+                    else reorderInfo!!.first to to.index
+
+                reorderingTabs =
+                    reorderingTabs?.toMutableList()?.apply { add(to.index, removeAt(from.index)) }
             }
+
+        LaunchedEffect(preferences.tabOrderAndVisibility) { reorderingTabs = null }
 
         DialogBase(
             title = Strings[R.string.preferences_tabs],
             onConfirmOrDismiss = { viewModel.uiManager.closeDialog() },
         ) {
             LazyColumn(state = lazyListState) {
-                itemsIndexed(preferences.tabOrderAndVisibility, { _, (type, _) -> type }) {
-                    index,
-                    (type, visibility) ->
+                itemsIndexed(
+                    reorderingTabs ?: preferences.tabOrderAndVisibility,
+                    { _, (type, _) -> type },
+                ) { index, (type, visibility) ->
                     ReorderableItem(reorderableLazyListState, type) { isDragging ->
                         UtilityCheckBoxListItem(
                             text = Strings[type.stringId],
@@ -130,12 +142,24 @@ class PreferencesTabsDialog() : Dialog() {
                                                 view,
                                                 HapticFeedbackConstantsCompat.DRAG_START,
                                             )
+                                            reorderInfo = null
+                                            reorderingTabs = preferences.tabOrderAndVisibility
                                         },
                                         onDragStopped = {
                                             ViewCompat.performHapticFeedback(
                                                 view,
                                                 HapticFeedbackConstantsCompat.GESTURE_END,
                                             )
+                                            reorderInfo?.let { (from, to) ->
+                                                viewModel.updatePreferences {
+                                                    it.copy(
+                                                        tabOrderAndVisibility =
+                                                            it.tabOrderAndVisibility
+                                                                .toMutableList()
+                                                                .apply { add(to, removeAt(from)) }
+                                                    )
+                                                }
+                                            }
                                         },
                                     )
                                     .background(MaterialTheme.colorScheme.surfaceContainerHigh),
