@@ -4,12 +4,14 @@ package org.sunsetware.phocid.ui.views.preferences
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDownward
 import androidx.compose.material.icons.filled.ArrowUpward
+import androidx.compose.material.icons.filled.DragHandle
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -22,6 +24,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.unit.dp
 import androidx.core.view.HapticFeedbackConstantsCompat
 import androidx.core.view.ViewCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -134,35 +137,44 @@ class PreferencesTabsDialog() : Dialog() {
                                         contentDescription = Strings[R.string.list_move_down],
                                     )
                                 }
+                                Icon(
+                                    Icons.Filled.DragHandle,
+                                    null,
+                                    modifier =
+                                        Modifier.padding(horizontal = 12.dp)
+                                            .draggableHandle(
+                                                onDragStarted = {
+                                                    ViewCompat.performHapticFeedback(
+                                                        view,
+                                                        HapticFeedbackConstantsCompat.DRAG_START,
+                                                    )
+                                                    reorderInfo = null
+                                                    reorderingTabs =
+                                                        preferences.tabOrderAndVisibility
+                                                },
+                                                onDragStopped = {
+                                                    ViewCompat.performHapticFeedback(
+                                                        view,
+                                                        HapticFeedbackConstantsCompat.GESTURE_END,
+                                                    )
+                                                    reorderInfo?.let { (from, to) ->
+                                                        viewModel.updatePreferences {
+                                                            it.copy(
+                                                                tabOrderAndVisibility =
+                                                                    it.tabOrderAndVisibility
+                                                                        .toMutableList()
+                                                                        .apply {
+                                                                            add(to, removeAt(from))
+                                                                        }
+                                                            )
+                                                        }
+                                                    }
+                                                },
+                                            ),
+                                )
                             },
                             modifier =
-                                Modifier.draggableHandle(
-                                        onDragStarted = {
-                                            ViewCompat.performHapticFeedback(
-                                                view,
-                                                HapticFeedbackConstantsCompat.DRAG_START,
-                                            )
-                                            reorderInfo = null
-                                            reorderingTabs = preferences.tabOrderAndVisibility
-                                        },
-                                        onDragStopped = {
-                                            ViewCompat.performHapticFeedback(
-                                                view,
-                                                HapticFeedbackConstantsCompat.GESTURE_END,
-                                            )
-                                            reorderInfo?.let { (from, to) ->
-                                                viewModel.updatePreferences {
-                                                    it.copy(
-                                                        tabOrderAndVisibility =
-                                                            it.tabOrderAndVisibility
-                                                                .toMutableList()
-                                                                .apply { add(to, removeAt(from)) }
-                                                    )
-                                                }
-                                            }
-                                        },
-                                    )
-                                    .background(MaterialTheme.colorScheme.surfaceContainerHigh),
+                                Modifier.background(MaterialTheme.colorScheme.surfaceContainerHigh),
                         )
                     }
                 }
