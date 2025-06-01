@@ -3,6 +3,7 @@ package org.sunsetware.phocid.service
 import android.content.Context
 import android.graphics.Bitmap
 import android.net.Uri
+import androidx.core.net.toUri
 import androidx.media3.common.C
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.util.BitmapLoader
@@ -19,6 +20,7 @@ import com.google.common.util.concurrent.ListeningExecutorService
 import com.google.common.util.concurrent.MoreExecutors
 import java.util.concurrent.Executors
 import org.sunsetware.phocid.FILE_PATH_KEY
+import org.sunsetware.phocid.URI_KEY
 import org.sunsetware.phocid.data.loadArtwork
 
 @UnstableApi
@@ -51,14 +53,10 @@ class CustomizedBitmapLoader(private val context: Context) : BitmapLoader {
     }
 
     override fun loadBitmapFromMetadata(metadata: MediaMetadata): ListenableFuture<Bitmap>? {
-        return if (metadata.artworkUri != null)
+        val uri = metadata.extras?.getString(URI_KEY)?.toUri()
+        return if (uri != null)
             listeningExecutorService.submit<Bitmap> {
-                loadArtwork(
-                        context,
-                        metadata.artworkUri!!,
-                        metadata.extras?.getString(FILE_PATH_KEY, "")?.takeIf { it.isNotEmpty() },
-                        true,
-                    )
+                loadArtwork(context, uri, metadata.extras?.getString(FILE_PATH_KEY), true)
                     .let(::requireNotNull)
             }
         else {

@@ -19,6 +19,11 @@ const val SET_TIMER_COMMAND = "setTimer"
 const val TIMER_TARGET_KEY = "timerTarget"
 const val TIMER_FINISH_LAST_TRACK_KEY = "timerFinishLastTrack"
 const val FILE_PATH_KEY = "filePath"
+/**
+ * Used instead of [androidx.media3.common.MediaMetadata.artworkUri]; Setting the latter would break
+ * Android Auto
+ */
+const val URI_KEY = "bitmapUri"
 const val AUDIO_SESSION_ID_KEY = "audioSessionId"
 
 const val SHORTCUT_CONTINUE = "org.sunsetware.phocid.CONTINUE"

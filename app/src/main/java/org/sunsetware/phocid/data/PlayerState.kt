@@ -2,6 +2,7 @@
 
 package org.sunsetware.phocid.data
 
+import android.os.Bundle
 import androidx.annotation.OptIn
 import androidx.compose.runtime.Immutable
 import androidx.core.os.bundleOf
@@ -15,6 +16,7 @@ import kotlin.time.Duration.Companion.minutes
 import kotlinx.serialization.Serializable
 import org.sunsetware.phocid.FILE_PATH_KEY
 import org.sunsetware.phocid.UNSHUFFLED_INDEX_KEY
+import org.sunsetware.phocid.URI_KEY
 
 @Serializable
 @Immutable
@@ -82,8 +84,7 @@ fun Track.getMediaItem(unshuffledIndex: Int?): MediaItem {
                     .setArtist(displayArtist)
                     .setAlbumTitle(album)
                     .setAlbumArtist(albumArtist)
-                    .setArtworkUri(uri)
-                    .setExtras(bundleOf(FILE_PATH_KEY to path))
+                    .setExtras(bundleOf(URI_KEY to uri.toString(), FILE_PATH_KEY to path))
                     .build()
             )
             .build()
@@ -102,8 +103,9 @@ fun MediaItem.setUnshuffledIndex(unshuffledIndex: Int?): MediaItem {
             mediaMetadata
                 .buildUpon()
                 .setExtras(
-                    if (unshuffledIndex == null) bundleOf()
-                    else bundleOf(Pair(UNSHUFFLED_INDEX_KEY, unshuffledIndex))
+                    (mediaMetadata.extras?.clone() as Bundle? ?: bundleOf()).apply {
+                        putInt(UNSHUFFLED_INDEX_KEY, unshuffledIndex ?: -1)
+                    }
                 )
                 .build()
         )
