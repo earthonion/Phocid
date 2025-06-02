@@ -10,17 +10,21 @@ import android.os.Bundle
 import android.os.SystemClock
 import androidx.annotation.OptIn
 import androidx.core.os.bundleOf
+import androidx.media3.common.C
 import androidx.media3.common.MediaItem
+import androidx.media3.common.MediaMetadata
 import androidx.media3.common.PlaybackParameters
 import androidx.media3.common.Player
 import androidx.media3.common.TrackSelectionParameters.AudioOffloadPreferences
 import androidx.media3.common.util.UnstableApi
+import androidx.media3.session.LibraryResult
+import androidx.media3.session.MediaLibraryService
 import androidx.media3.session.MediaSession
 import androidx.media3.session.MediaSession.ConnectionResult
-import androidx.media3.session.MediaSessionService
 import androidx.media3.session.SessionCommand
 import androidx.media3.session.SessionError
 import androidx.media3.session.SessionResult
+import com.google.common.collect.ImmutableList
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
 import kotlin.time.Duration.Companion.seconds
@@ -37,15 +41,21 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import org.sunsetware.phocid.data.capturePlayerState
+import org.sunsetware.phocid.data.getChildMediaItems
+import org.sunsetware.phocid.data.getMediaItem
 import org.sunsetware.phocid.data.restorePlayerState
+import org.sunsetware.phocid.data.search
+import org.sunsetware.phocid.data.transformMediaSessionCallbackItems
+import org.sunsetware.phocid.data.transformOnAddTracks
+import org.sunsetware.phocid.data.transformOnSetTracks
 import org.sunsetware.phocid.globals.GlobalData
 import org.sunsetware.phocid.service.CustomizedBitmapLoader
 import org.sunsetware.phocid.service.CustomizedPlayer
 import org.sunsetware.phocid.utils.Random
 
 @OptIn(UnstableApi::class)
-class PlaybackService : MediaSessionService() {
-    private var mediaSession: MediaSession? = null
+class PlaybackService : MediaLibraryService() {
+    private var mediaSession: MediaLibrarySession? = null
     private val mainScope = MainScope()
     private val timerMutex = Mutex()
     @Volatile private var timerTarget = -1L
@@ -97,7 +107,11 @@ class PlaybackService : MediaSessionService() {
         }
 
         mediaSession =
-            MediaSession.Builder(this, player)
+            MediaLibrarySession.Builder(
+                    this,
+                    player,
+                    createMediaSessionCallback(player, mapOf(SET_TIMER_COMMAND to ::onSetTimer)),
+                )
                 .setSessionActivity(
                     PendingIntent.getActivity(
                         this,
@@ -106,15 +120,12 @@ class PlaybackService : MediaSessionService() {
                         PendingIntent.FLAG_IMMUTABLE,
                     )
                 )
-                .setCallback(
-                    createMediaSessionCallback(player, mapOf(SET_TIMER_COMMAND to ::onSetTimer))
-                )
                 .setBitmapLoader(CustomizedBitmapLoader(this))
                 .setSessionExtras(bundleOf(AUDIO_SESSION_ID_KEY to player.inner.audioSessionId))
                 .build()
     }
 
-    override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaSession? {
+    override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaLibrarySession? {
         return mediaSession
     }
 
@@ -186,11 +197,147 @@ class PlaybackService : MediaSessionService() {
         }
     }
 
+    private val defaultLibraryParams =
+        LibraryParams.Builder().setOffline(true).setRecent(false).setSuggested(false).build()
+
     private fun createMediaSessionCallback(
         player: CustomizedPlayer,
         commands: Map<String, (CustomizedPlayer, MediaSession, Bundle) -> Unit>,
-    ): MediaSession.Callback {
-        return object : MediaSession.Callback {
+    ): MediaLibrarySession.Callback {
+        return object : MediaLibrarySession.Callback {
+            override fun onGetLibraryRoot(
+                session: MediaLibrarySession,
+                browser: MediaSession.ControllerInfo,
+                params: LibraryParams?,
+            ): ListenableFuture<LibraryResult<MediaItem>> {
+                return Futures.immediateFuture(
+                    LibraryResult.ofItem(
+                        MediaItem.Builder()
+                            .setMediaId(ROOT_MEDIA_ID)
+                            .setMediaMetadata(
+                                MediaMetadata.Builder()
+                                    .setMediaType(MediaMetadata.MEDIA_TYPE_FOLDER_MIXED)
+                                    .setIsBrowsable(true)
+                                    .setIsPlayable(false)
+                                    .build()
+                            )
+                            .build(),
+                        defaultLibraryParams,
+                    )
+                )
+            }
+
+            override fun onGetChildren(
+                session: MediaLibrarySession,
+                browser: MediaSession.ControllerInfo,
+                parentId: String,
+                page: Int,
+                pageSize: Int,
+                params: LibraryParams?,
+            ): ListenableFuture<LibraryResult<ImmutableList<MediaItem>>> {
+                return Futures.immediateFuture(
+                    getChildMediaItems(
+                            GlobalData.preferences.value,
+                            GlobalData.libraryIndex.value,
+                            GlobalData.playlistManager.playlists.value,
+                            parentId,
+                        )
+                        ?.let {
+                            LibraryResult.ofItemList(
+                                it.drop(pageSize * page).take(pageSize),
+                                defaultLibraryParams,
+                            )
+                        } ?: LibraryResult.ofError(SessionError.ERROR_NOT_SUPPORTED)
+                )
+            }
+
+            override fun onSearch(
+                session: MediaLibrarySession,
+                browser: MediaSession.ControllerInfo,
+                query: String,
+                params: LibraryParams?,
+            ): ListenableFuture<LibraryResult<Void>> {
+                val preferences = GlobalData.preferences.value
+                val libraryIndex = GlobalData.libraryIndex.value
+                val result =
+                    libraryIndex.tracks.values.search(query, preferences.searchCollator).map {
+                        it.getMediaItem(null)
+                    }
+                session.notifySearchResultChanged(browser, query, result.size, defaultLibraryParams)
+                return Futures.immediateFuture(LibraryResult.ofVoid())
+            }
+
+            override fun onGetSearchResult(
+                session: MediaLibrarySession,
+                browser: MediaSession.ControllerInfo,
+                query: String,
+                page: Int,
+                pageSize: Int,
+                params: LibraryParams?,
+            ): ListenableFuture<LibraryResult<ImmutableList<MediaItem>>> {
+                val preferences = GlobalData.preferences.value
+                val libraryIndex = GlobalData.libraryIndex.value
+                val result =
+                    libraryIndex.tracks.values.search(query, preferences.searchCollator).map {
+                        it.getMediaItem(null)
+                    }
+                return Futures.immediateFuture(
+                    LibraryResult.ofItemList(
+                        result.drop(page * pageSize).take(pageSize),
+                        defaultLibraryParams,
+                    )
+                )
+            }
+
+            override fun onSetMediaItems(
+                mediaSession: MediaSession,
+                controller: MediaSession.ControllerInfo,
+                mediaItems: List<MediaItem>,
+                startIndex: Int,
+                startPositionMs: Long,
+            ): ListenableFuture<MediaSession.MediaItemsWithStartPosition> {
+                val preferences = GlobalData.preferences.value
+                val libraryIndex = GlobalData.libraryIndex.value
+                val playerState = GlobalData.playerState.value
+                val playlists = GlobalData.playlistManager.playlists.value
+                val items =
+                    transformMediaSessionCallbackItems(
+                        preferences,
+                        libraryIndex,
+                        playlists,
+                        mediaItems,
+                    )
+                val (newItems, seekIndex) =
+                    transformOnSetTracks(
+                        playerState,
+                        items,
+                        startIndex.takeIf { it != C.INDEX_UNSET },
+                    )
+                return Futures.immediateFuture(
+                    MediaSession.MediaItemsWithStartPosition(newItems, seekIndex, startPositionMs)
+                )
+            }
+
+            override fun onAddMediaItems(
+                mediaSession: MediaSession,
+                controller: MediaSession.ControllerInfo,
+                /** These only contain valid [MediaItem.mediaId]s; all other fields are null */
+                mediaItems: List<MediaItem>,
+            ): ListenableFuture<List<MediaItem>> {
+                val preferences = GlobalData.preferences.value
+                val libraryIndex = GlobalData.libraryIndex.value
+                val playerState = GlobalData.playerState.value
+                val playlists = GlobalData.playlistManager.playlists.value
+                val items =
+                    transformMediaSessionCallbackItems(
+                        preferences,
+                        libraryIndex,
+                        playlists,
+                        mediaItems,
+                    )
+                return Futures.immediateFuture(transformOnAddTracks(playerState, items))
+            }
+
             override fun onCustomCommand(
                 session: MediaSession,
                 controller: MediaSession.ControllerInfo,
@@ -212,7 +359,7 @@ class PlaybackService : MediaSessionService() {
             ): ConnectionResult {
                 return ConnectionResult.AcceptedResultBuilder(session)
                     .setAvailableSessionCommands(
-                        ConnectionResult.DEFAULT_SESSION_COMMANDS.buildUpon()
+                        ConnectionResult.DEFAULT_SESSION_AND_LIBRARY_COMMANDS.buildUpon()
                             .addSessionCommands(
                                 commands.map { (command, _) ->
                                     SessionCommand(command, Bundle.EMPTY)

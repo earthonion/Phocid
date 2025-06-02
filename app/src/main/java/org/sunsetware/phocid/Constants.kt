@@ -26,6 +26,8 @@ const val FILE_PATH_KEY = "filePath"
 const val URI_KEY = "bitmapUri"
 const val AUDIO_SESSION_ID_KEY = "audioSessionId"
 
+const val ROOT_MEDIA_ID = "root"
+
 const val SHORTCUT_CONTINUE = "org.sunsetware.phocid.CONTINUE"
 const val SHORTCUT_SHUFFLE = "org.sunsetware.phocid.SHUFFLE"
 

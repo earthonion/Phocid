@@ -437,20 +437,37 @@ data class Album(
 
 data class AlbumKey(val name: CaseInsensitiveString, val albumArtist: CaseInsensitiveString?) {
     /**
-     * This field can't be replaced by [toString]. Since [toString] doesn't escape strings, two
-     * different [AlbumKey]s could still theoretically collide.
+     * Since the default [toString] doesn't escape strings, two different [AlbumKey]s could still
+     * theoretically collide without overriding this.
      *
      * TODO: Find a less hacky hack
      */
-    val composeKey =
-        Base64.encode(name.string.toByteArray(Charsets.UTF_8)) +
+    override fun toString(): String {
+        return Base64.encode(name.string.toByteArray(Charsets.UTF_8)) +
             " " +
             (albumArtist?.string?.let { Base64.encode(it.toByteArray(Charsets.UTF_8)) } ?: "?")
+    }
 
     constructor(
         name: String,
         albumArtist: String?,
     ) : this(CaseInsensitiveString(name), albumArtist?.let { CaseInsensitiveString(it) })
+}
+
+fun AlbumKey(string: String): AlbumKey? {
+    try {
+        val segments = string.split(' ', limit = 2)
+        return AlbumKey(
+            Base64.decode(segments[0]).toString(Charsets.UTF_8),
+            segments
+                .getOrNull(1)
+                ?.takeIf { it != "?" }
+                ?.let { Base64.decode(it).toString(Charsets.UTF_8) },
+        )
+    } catch (ex: Exception) {
+        Log.e("Phocid", "Attempted to decode an invalid AlbumKey $string", ex)
+        return null
+    }
 }
 
 val Track.albumKey: AlbumKey?

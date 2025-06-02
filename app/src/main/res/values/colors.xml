@@ -3,4 +3,5 @@
     <color name="splashScreenBackground">#FF312C50</color>
     <color name="shortcutBackground">#FF605790</color>
     <color name="shortcutForeground">#FFFFFFFF</color>
+    <color name="androidAutoAccent">#FF605790</color>
 </resources>

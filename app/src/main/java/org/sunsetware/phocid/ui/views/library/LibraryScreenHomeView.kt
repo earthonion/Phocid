@@ -51,6 +51,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.media3.common.MediaMetadata
 import java.util.UUID
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -259,7 +260,7 @@ class LibraryScreenHomeViewState(
         return albums.map { (pair, hint) ->
             val (key, album) = pair
             LibraryScreenHomeViewItem(
-                key = key.composeKey,
+                key = key.toString(),
                 title = album.name,
                 subtitle = album.displayAlbumArtist,
                 scrollHint = hint,
@@ -794,22 +795,66 @@ data class LibraryScreenTabInfo(
 @Serializable
 enum class LibraryScreenTabType(
     val stringId: Int,
+    val mediaId: String,
+    val mediaType: Int,
+    val collectionType: LibraryScreenCollectionType?,
     val sortingOptions: Map<String, SortingOption>,
     val icon: ImageVector,
 ) {
-    TRACKS(R.string.tab_tracks, Track.SortingOptions, Icons.Outlined.MusicNote),
-    ALBUMS(R.string.tab_albums, Album.CollectionSortingOptions, Icons.Outlined.Album),
-    ARTISTS(R.string.tab_artists, Artist.CollectionSortingOptions, Icons.Outlined.PersonOutline),
+    TRACKS(
+        R.string.tab_tracks,
+        "tracks",
+        MediaMetadata.MEDIA_TYPE_MIXED,
+        null,
+        Track.SortingOptions,
+        Icons.Outlined.MusicNote,
+    ),
+    ALBUMS(
+        R.string.tab_albums,
+        "albums",
+        MediaMetadata.MEDIA_TYPE_FOLDER_ALBUMS,
+        LibraryScreenCollectionType.ALBUM,
+        Album.CollectionSortingOptions,
+        Icons.Outlined.Album,
+    ),
+    ARTISTS(
+        R.string.tab_artists,
+        "artists",
+        MediaMetadata.MEDIA_TYPE_FOLDER_ARTISTS,
+        LibraryScreenCollectionType.ARTIST,
+        Artist.CollectionSortingOptions,
+        Icons.Outlined.PersonOutline,
+    ),
     ALBUM_ARTISTS(
         R.string.tab_album_artists,
+        "albumArtists",
+        MediaMetadata.MEDIA_TYPE_FOLDER_ARTISTS,
+        LibraryScreenCollectionType.ALBUM_ARTIST,
         AlbumArtist.CollectionSortingOptions,
         Icons.Outlined.AccountCircle,
     ),
-    GENRES(R.string.tab_genres, Genre.CollectionSortingOptions, Icons.Outlined.Category),
+    GENRES(
+        R.string.tab_genres,
+        "genres",
+        MediaMetadata.MEDIA_TYPE_FOLDER_GENRES,
+        LibraryScreenCollectionType.GENRE,
+        Genre.CollectionSortingOptions,
+        Icons.Outlined.Category,
+    ),
     PLAYLISTS(
         R.string.tab_playlists,
+        "playlists",
+        MediaMetadata.MEDIA_TYPE_FOLDER_PLAYLISTS,
+        LibraryScreenCollectionType.PLAYLIST,
         RealizedPlaylist.CollectionSortingOptions,
         Icons.AutoMirrored.Outlined.QueueMusic,
     ),
-    FOLDERS(R.string.tab_folders, Folder.SortingOptions, Icons.Outlined.Folder),
+    FOLDERS(
+        R.string.tab_folders,
+        "folders",
+        MediaMetadata.MEDIA_TYPE_MIXED,
+        LibraryScreenCollectionType.FOLDER,
+        Folder.SortingOptions,
+        Icons.Outlined.Folder,
+    ),
 }

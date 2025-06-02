@@ -27,7 +27,6 @@ import org.sunsetware.phocid.PlaybackService
 import org.sunsetware.phocid.SET_TIMER_COMMAND
 import org.sunsetware.phocid.TIMER_FINISH_LAST_TRACK_KEY
 import org.sunsetware.phocid.TIMER_TARGET_KEY
-import org.sunsetware.phocid.utils.Random
 import org.sunsetware.phocid.utils.wrap
 
 @Stable
@@ -159,37 +158,14 @@ class PlayerManager(val state: StateFlow<PlayerState>) : AutoCloseable {
     }
 
     fun setTracks(tracks: List<Track>, index: Int?) {
-        state.value.let { state ->
-            val seekIndex: Int
-            if (!state.shuffle) {
-                mediaController.setMediaItems(tracks.map { it.getMediaItem(null) })
-                seekIndex = index ?: 0
-            } else {
-                val shuffledIndices =
-                    if (index != null) {
-                        listOf(index) + tracks.indices.filter { it != index }.shuffled(Random)
-                    } else {
-                        tracks.indices.shuffled(Random)
-                    }
-                mediaController.setMediaItems(
-                    shuffledIndices.map { i -> tracks[i].getMediaItem(i) }
-                )
-                seekIndex = 0
-            }
-            mediaController.seekTo(seekIndex, 0)
-            mediaController.play()
-        }
+        if (index != null)
+            mediaController.setMediaItems(tracks.map { it.getMediaItem(null) }, index, 0)
+        else mediaController.setMediaItems(tracks.map { it.getMediaItem(null) })
+        mediaController.play()
     }
 
     fun addTracks(tracks: List<Track>) {
-        state.value.let { state ->
-            val firstIndex = state.actualPlayQueue.size
-            mediaController.addMediaItems(
-                tracks.mapIndexed { i, track ->
-                    track.getMediaItem(if (!state.shuffle) null else firstIndex + i)
-                }
-            )
-        }
+        mediaController.addMediaItems(tracks.map { it.getMediaItem(null) })
     }
 
     fun playNext(tracks: List<Track>) {
