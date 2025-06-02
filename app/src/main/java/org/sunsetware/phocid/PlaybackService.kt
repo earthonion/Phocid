@@ -174,6 +174,11 @@ class PlaybackService : MediaLibraryService() {
                 }
             }
 
+            override fun onShuffleModeEnabledChanged(shuffleModeEnabled: Boolean) {
+                // onEvent won't trigger for this...
+                GlobalData.playerState.update { player.capturePlayerState() }
+            }
+
             override fun onPlaybackParametersChanged(playbackParameters: PlaybackParameters) {
                 player.updateAudioOffloading(audioOffloading)
             }
