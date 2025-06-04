@@ -70,6 +70,8 @@ dependencies {
     implementation(libs.androidx.ui)
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
+    implementation(libs.androidx.glance.appwidget)
+    implementation(libs.androidx.glance.material3)
     // TODO: Maybe requiring a dependency just for `FilenameUtils` is too much
     implementation(libs.commons.io)
     implementation(libs.core.splashscreen)

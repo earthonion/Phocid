@@ -1,6 +1,7 @@
 package org.sunsetware.phocid.ui.theme
 
 import androidx.compose.material3.Typography
+import androidx.compose.runtime.Stable
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.LineHeightStyle
 
@@ -35,4 +36,9 @@ private fun typography(lineHeightMultiplier: Float): Typography {
         labelMedium = transform(default.labelMedium, lineHeightMultiplier),
         labelSmall = transform(default.labelSmall, lineHeightMultiplier),
     )
+}
+
+@Stable
+fun TextStyle.toGlanceStyle(): androidx.glance.text.TextStyle {
+    return androidx.glance.text.TextStyle(fontSize = fontSize)
 }

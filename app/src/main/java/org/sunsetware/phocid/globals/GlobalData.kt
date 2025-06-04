@@ -5,6 +5,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import org.sunsetware.phocid.data.LibraryIndex
 import org.sunsetware.phocid.data.PlayerState
+import org.sunsetware.phocid.data.PlayerTransientState
 import org.sunsetware.phocid.data.PlaylistManager
 import org.sunsetware.phocid.data.Preferences
 import org.sunsetware.phocid.data.UnfilteredTrackIndex
@@ -20,6 +21,8 @@ object GlobalData {
     @Volatile lateinit var preferences: MutableStateFlow<Preferences>
     @Volatile lateinit var unfilteredTrackIndex: MutableStateFlow<UnfilteredTrackIndex>
     @Volatile lateinit var playerState: MutableStateFlow<PlayerState>
+
+    val playerTransientState = MutableStateFlow(PlayerTransientState())
 
     @Volatile lateinit var libraryIndex: StateFlow<LibraryIndex>
 

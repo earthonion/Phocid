@@ -16,6 +16,8 @@
     <string name="commons_quit">離開</string>
     <string name="commons_remove">移除</string>
     <string name="commons_reset">重設</string>
+    <!-- Adjective, not noun -->
+    <string name="commons_selected">已選擇</string>
     <string name="commons_sync">同步</string>
 
     <string name="count_album">{0, plural, other {# 張專輯}}</string>
@@ -249,6 +251,16 @@
     <string name="preferences_ui_scaling_number">{0, number, ::.00}×</string>
     <string name="preferences_version">版本</string>
     <string name="preferences_website">網站</string>
+    <string name="preferences_widget_accent_background">彩色背景</string>
+    <string name="preferences_widget_artwork_background">封面背景</string>
+    <string name="preferences_widget_color">色彩</string>
+    <string name="preferences_widget_dark_theme">深色主題</string>
+    <string name="preferences_widget_layout">布局</string>
+    <string name="preferences_widget_layout_extra_large">特大</string>
+    <string name="preferences_widget_layout_large">大</string>
+    <string name="preferences_widget_layout_medium">中</string>
+    <string name="preferences_widget_layout_small">小</string>
+    <string name="preferences_widget_settings">小工具設置</string>
 
     <string name="search">搜尋</string>
     <string name="search_in_list">在清單中搜尋</string>

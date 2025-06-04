@@ -4,12 +4,15 @@ import android.app.Application
 import android.os.Build
 import android.util.Log
 import android.widget.Toast
+import androidx.glance.appwidget.updateAll
 import java.io.File
 import kotlin.system.exitProcess
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import org.sunsetware.phocid.data.LibraryIndex
 import org.sunsetware.phocid.data.PlayerState
@@ -93,6 +96,10 @@ class MainApplication : Application() {
                     )
                 saveManagers +=
                     SaveManager(context, ioScope, playerState, PLAYER_STATE_FILE_NAME, false)
+
+                defaultScope.launch {
+                    playerState.onEach { MainAppWidget().updateAll(context) }.collect()
+                }
 
                 initialized.set(true)
             }

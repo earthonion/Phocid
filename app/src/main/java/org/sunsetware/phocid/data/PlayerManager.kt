@@ -15,7 +15,6 @@ import androidx.media3.session.MediaController
 import androidx.media3.session.SessionCommand
 import androidx.media3.session.SessionToken
 import java.util.concurrent.atomic.AtomicBoolean
-import java.util.concurrent.atomic.AtomicLong
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -30,12 +29,12 @@ import org.sunsetware.phocid.TIMER_TARGET_KEY
 import org.sunsetware.phocid.utils.wrap
 
 @Stable
-class PlayerManager(val state: StateFlow<PlayerState>) : AutoCloseable {
-    private val _transientState = MutableStateFlow(PlayerTransientState())
-    val transientState = _transientState.asStateFlow()
-
+class PlayerManager(
+    val state: StateFlow<PlayerState>,
+    private val _transientState: MutableStateFlow<PlayerTransientState>,
+) : AutoCloseable {
     private lateinit var mediaController: MediaController
-    private val transientStateVersion = AtomicLong(0)
+    val transientState = _transientState.asStateFlow()
 
     val currentPosition: Long
         get() = mediaController.currentPosition
@@ -56,17 +55,6 @@ class PlayerManager(val state: StateFlow<PlayerState>) : AutoCloseable {
             {
                 mediaController = controllerFuture.get()
                 mediaController.prepare()
-
-                updateTransientState()
-
-                val listener =
-                    object : Player.Listener {
-                        override fun onEvents(player: Player, events: Player.Events) {
-                            updateTransientState()
-                        }
-                    }
-                mediaController.addListener(listener)
-
                 completed.set(true)
             },
             ContextCompat.getMainExecutor(context),
@@ -78,9 +66,7 @@ class PlayerManager(val state: StateFlow<PlayerState>) : AutoCloseable {
     }
 
     private fun updateTransientState() {
-        _transientState.update {
-            mediaController.captureTransientState(transientStateVersion.getAndIncrement())
-        }
+        _transientState.update { mediaController.captureTransientState() }
     }
 
     fun seekToPrevious() {
@@ -300,8 +286,4 @@ class PlayerManager(val state: StateFlow<PlayerState>) : AutoCloseable {
             false
         }
     }
-}
-
-private fun MediaController.captureTransientState(version: Long): PlayerTransientState {
-    return PlayerTransientState(version, playbackState == Player.STATE_READY && playWhenReady)
 }

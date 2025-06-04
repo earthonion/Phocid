@@ -89,6 +89,11 @@ data class Preferences(
     val playlistIoSyncMappings: Map<@Serializable(with = UUIDSerializer::class) UUID, String> =
         emptyMap(),
     val treatEmbeddedLyricsAsLrc: Boolean = false,
+    // Widget
+    val widgetArtworkBackground: Boolean = true,
+    val widgetAccentBackground: Boolean = true,
+    val widgetDarkTheme: DarkThemePreference = DarkThemePreference.SYSTEM,
+    val widgetLayout: WidgetLayout = WidgetLayout.SMALL,
 ) {
     fun upgrade(): Preferences {
         val newTabSettings =
@@ -245,4 +250,15 @@ enum class LyricsDisplayPreference(val stringId: Int) {
     DISABLED(R.string.preferences_lyrics_display_disabled),
     DEFAULT(R.string.preferences_lyrics_display_default),
     TWO_LINES(R.string.preferences_lyrics_display_two_lines),
+}
+
+@Serializable
+enum class WidgetLayout(val stringId: Int, val previewId: Int) {
+    SMALL(R.string.preferences_widget_layout_small, R.drawable.widget_preview_small),
+    MEDIUM(R.string.preferences_widget_layout_medium, R.drawable.widget_preview_medium),
+    LARGE(R.string.preferences_widget_layout_large, R.drawable.widget_preview_large),
+    EXTRA_LARGE(
+        R.string.preferences_widget_layout_extra_large,
+        R.drawable.widget_preview_extra_large,
+    ),
 }

@@ -21,6 +21,8 @@
     <string name="commons_quit">Quit</string>
     <string name="commons_remove">Remove</string>
     <string name="commons_reset">Reset</string>
+    <!-- Adjective, not noun -->
+    <string name="commons_selected">Selected</string>
     <string name="commons_sync">Sync</string>
 
     <string name="count_album">{0, plural, one {# album} other {# albums}}</string>
@@ -254,6 +256,16 @@
     <string name="preferences_ui_scaling_number">{0, number, ::.00}×</string>
     <string name="preferences_version">Version</string>
     <string name="preferences_website">Website</string>
+    <string name="preferences_widget_accent_background">Colored background</string>
+    <string name="preferences_widget_artwork_background">Artwork background</string>
+    <string name="preferences_widget_color">Color</string>
+    <string name="preferences_widget_dark_theme">Dark theme</string>
+    <string name="preferences_widget_layout">Layout</string>
+    <string name="preferences_widget_layout_extra_large">Extra large</string>
+    <string name="preferences_widget_layout_large">Large</string>
+    <string name="preferences_widget_layout_medium">Medium</string>
+    <string name="preferences_widget_layout_small">Small</string>
+    <string name="preferences_widget_settings">Widget settings</string>
 
     <string name="search">Search</string>
     <string name="search_in_list">Search in list</string>

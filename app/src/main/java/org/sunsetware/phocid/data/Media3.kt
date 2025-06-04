@@ -12,6 +12,7 @@ import androidx.media3.common.PlaybackParameters
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import java.util.UUID
+import java.util.concurrent.atomic.AtomicLong
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 import kotlinx.serialization.Serializable
@@ -76,6 +77,15 @@ fun Player.restorePlayerState(state: PlayerState, unfilteredTrackIndex: Unfilter
     seekTo(state.currentIndex, state.currentPosition)
     repeatMode = state.repeat
     playbackParameters = PlaybackParameters(state.speed, state.pitch)
+}
+
+private val transientStateVersion = AtomicLong(0)
+
+fun Player.captureTransientState(): PlayerTransientState {
+    return PlayerTransientState(
+        transientStateVersion.getAndIncrement(),
+        playbackState == Player.STATE_READY && playWhenReady,
+    )
 }
 
 fun transformOnSetTracks(

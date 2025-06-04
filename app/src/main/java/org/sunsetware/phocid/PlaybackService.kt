@@ -41,6 +41,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import org.sunsetware.phocid.data.capturePlayerState
+import org.sunsetware.phocid.data.captureTransientState
 import org.sunsetware.phocid.data.getChildMediaItems
 import org.sunsetware.phocid.data.getMediaItem
 import org.sunsetware.phocid.data.restorePlayerState
@@ -149,6 +150,7 @@ class PlaybackService : MediaLibraryService() {
         return object : Player.Listener {
             override fun onEvents(player: Player, events: Player.Events) {
                 GlobalData.playerState.update { player.capturePlayerState() }
+                GlobalData.playerTransientState.update { player.captureTransientState() }
 
                 if (
                     events.containsAny(

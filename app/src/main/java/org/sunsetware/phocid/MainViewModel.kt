@@ -67,7 +67,8 @@ class MainViewModel(private val application: Application) : AndroidViewModel(app
                 while (!GlobalData.initialized.get()) {
                     delay(1)
                 }
-                playerManager = PlayerManager(GlobalData.playerState)
+                playerManager =
+                    PlayerManager(GlobalData.playerState, GlobalData.playerTransientState)
                 uiManager =
                     UiManager(
                         application.applicationContext,
