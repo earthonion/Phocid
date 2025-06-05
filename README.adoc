@@ -103,6 +103,7 @@ I don't accept donations.
 == Credits
 
 * https://github.com/kisaragi-hiu[kisaragi-hiu] - zh-Hant translator
+* https://github.com/Omega-3-4-5[Omega-3-4-5] - de translator
 
 == License
 
