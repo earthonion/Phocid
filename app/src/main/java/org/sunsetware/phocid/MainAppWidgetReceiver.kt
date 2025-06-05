@@ -153,6 +153,7 @@ class MainAppWidget : GlanceAppWidget() {
                                     it.id,
                                     it.path,
                                     preferences.highResArtworkPreference.player,
+                                    preferences.widgetArtworkResolutionLimit,
                                 )
                             }
                 }

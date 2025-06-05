@@ -244,6 +244,8 @@
     <string name="preferences_website">网站</string>
     <string name="preferences_widget_accent_background">彩色背景</string>
     <string name="preferences_widget_artwork_background">图像背景</string>
+    <string name="preferences_widget_artwork_resolution_limit">图像分辨率上限</string>
+    <string name="preferences_widget_artwork_resolution_limit_subtitle">减小以防止小组件崩溃；增大以提高图像画质</string>
     <string name="preferences_widget_color">色彩</string>
     <string name="preferences_widget_dark_theme">深色主题</string>
     <string name="preferences_widget_layout">布局</string>

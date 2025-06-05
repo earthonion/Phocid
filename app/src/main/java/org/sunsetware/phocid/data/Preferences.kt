@@ -94,6 +94,7 @@ data class Preferences(
     val widgetAccentBackground: Boolean = true,
     val widgetDarkTheme: DarkThemePreference = DarkThemePreference.SYSTEM,
     val widgetLayout: WidgetLayout = WidgetLayout.SMALL,
+    val widgetArtworkResolutionLimit: Int = 700,
 ) {
     fun upgrade(): Preferences {
         val newTabSettings =

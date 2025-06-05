@@ -260,6 +260,8 @@
     <string name="preferences_website">Website</string>
     <string name="preferences_widget_accent_background">Colored background</string>
     <string name="preferences_widget_artwork_background">Artwork background</string>
+    <string name="preferences_widget_artwork_resolution_limit">Artwork resolution limit</string>
+    <string name="preferences_widget_artwork_resolution_limit_subtitle">Decrease if the widget crashes; increase to have better image quality</string>
     <string name="preferences_widget_color">Color</string>
     <string name="preferences_widget_dark_theme">Dark theme</string>
     <string name="preferences_widget_layout">Layout</string>
