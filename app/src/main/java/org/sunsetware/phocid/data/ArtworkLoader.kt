@@ -12,12 +12,14 @@ import java.io.File
 import java.io.FileInputStream
 import java.nio.ByteBuffer
 import java.util.concurrent.atomic.AtomicInteger
+import kotlin.math.max
 import kotlin.math.min
 import org.apache.commons.io.FilenameUtils
 import org.jaudiotagger.audio.AudioFileIO
 import org.sunsetware.omio.VORBIS_COMMENT_METADATA_BLOCK_PICTURE
 import org.sunsetware.omio.decodeMetadataBlockPicture
 import org.sunsetware.omio.readOpusMetadata
+import org.sunsetware.phocid.utils.roundToIntOrZero
 import org.sunsetware.phocid.utils.trimAndNormalize
 
 /** https://developer.android.com/media/platform/supported-formats#image-formats */
@@ -123,9 +125,22 @@ private fun loadWithLibrary(path: String?, sizeLimit: Int?): Bitmap? {
             decoder,
             info,
             source ->
-            if (sizeLimit != null) {
+            val resizeFactor = sizeLimit?.toFloat()?.div(max(info.size.width, info.size.height))
+            if (
+                resizeFactor != null &&
+                    resizeFactor.isFinite() &&
+                    resizeFactor > 0 &&
+                    resizeFactor < 1
+            ) {
                 decoder.setAllocator(ImageDecoder.ALLOCATOR_SOFTWARE)
-                decoder.setTargetSize(sizeLimit * info.size.width / info.size.height, sizeLimit)
+                decoder.setTargetSize(
+                    (resizeFactor * info.size.width)
+                        .roundToIntOrZero()
+                        .coerceIn(1, info.size.width),
+                    (resizeFactor * info.size.height)
+                        .roundToIntOrZero()
+                        .coerceIn(1, info.size.height),
+                )
             }
         }
     } catch (_: Exception) {
@@ -173,11 +188,22 @@ private fun loadExternal(context: Context, path: String?, sizeLimit: Int?): Bitm
             try {
                 ImageDecoder.decodeBitmap(ImageDecoder.createSource(file)) { decoder, info, source
                     ->
-                    if (sizeLimit != null) {
+                    val resizeFactor =
+                        sizeLimit?.toFloat()?.div(max(info.size.width, info.size.height))
+                    if (
+                        resizeFactor != null &&
+                            resizeFactor.isFinite() &&
+                            resizeFactor > 0 &&
+                            resizeFactor < 1
+                    ) {
                         decoder.setAllocator(ImageDecoder.ALLOCATOR_SOFTWARE)
                         decoder.setTargetSize(
-                            sizeLimit * info.size.width / info.size.height,
-                            sizeLimit,
+                            (resizeFactor * info.size.width)
+                                .roundToIntOrZero()
+                                .coerceIn(1, info.size.width),
+                            (resizeFactor * info.size.height)
+                                .roundToIntOrZero()
+                                .coerceIn(1, info.size.height),
                         )
                     }
                 }
