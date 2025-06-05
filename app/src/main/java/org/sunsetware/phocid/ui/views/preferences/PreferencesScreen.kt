@@ -7,6 +7,7 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.provider.Settings
+import android.util.Log
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -28,6 +29,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -40,8 +42,13 @@ import com.ibm.icu.number.Notation
 import com.ibm.icu.number.NumberFormatter
 import com.ibm.icu.number.Precision
 import com.ibm.icu.util.MeasureUnit
+import java.io.File
 import java.nio.charset.Charset
 import java.util.Locale
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import org.apache.commons.io.FilenameUtils
 import org.sunsetware.phocid.BuildConfig
 import org.sunsetware.phocid.MainViewModel
 import org.sunsetware.phocid.R
@@ -716,6 +723,56 @@ object PreferencesScreen : TopLevelScreen() {
                         modifier =
                             Modifier.clickable {
                                 uiManager.openDialog(PreferencesThirdPartyLicensesDialog())
+                            },
+                    )
+                    val logcatPath = remember {
+                        context.getExternalFilesDir(null)?.let {
+                            FilenameUtils.concat(it.path, "logcat.txt")
+                        }
+                    }
+                    UtilityListItem(
+                        title = Strings[R.string.preferences_dump_logcat],
+                        subtitle =
+                            Strings[R.string.preferences_dump_logcat_subtitle].icuFormat(
+                                logcatPath
+                            ),
+                        modifier =
+                            Modifier.clickable {
+                                coroutineScope.launch {
+                                    withContext(Dispatchers.IO) {
+                                        try {
+                                            File(checkNotNull(logcatPath)).bufferedWriter().use {
+                                                writer ->
+                                                writer.write(BuildConfig.VERSION_NAME)
+                                                writer.write("\n\n")
+                                                writer.write("API level ${Build.VERSION.SDK_INT}")
+                                                writer.write("\n\n")
+                                                Runtime.getRuntime()
+                                                    .exec("logcat -d")
+                                                    .inputStream
+                                                    .bufferedReader()
+                                                    .use { reader ->
+                                                        while (true) {
+                                                            val line = reader.readLine()
+                                                            if (line == null) break
+                                                            writer.write(line)
+                                                            writer.write("\n")
+                                                        }
+                                                    }
+
+                                                uiManager.toast(
+                                                    Strings[R.string.toast_dump_logcat_success]
+                                                )
+                                            }
+                                        } catch (ex: Exception) {
+                                            Log.e("Phocid", "Can't dump logcat", ex)
+                                            uiManager.toast(
+                                                Strings[R.string.toast_dump_logcat_failed]
+                                                    .icuFormat(ex.toString())
+                                            )
+                                        }
+                                    }
+                                }
                             },
                     )
                 }

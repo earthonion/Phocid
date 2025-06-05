@@ -139,6 +139,8 @@
     <string name="preferences_dark_theme_light">浅色</string>
     <string name="preferences_dark_theme_system">跟随系统</string>
     <string name="preferences_data">数据</string>
+    <string name="preferences_dump_logcat">转储 Logcat</string>
+    <string name="preferences_dump_logcat_subtitle">保存路径：{0}</string>
     <string name="preferences_folder_picker_dialog_title">选择文件夹</string>
     <string name="preferences_folder_picker_dialog_up">返回上一级</string>
     <string name="preferences_folder_tab_root">首页文件夹</string>
@@ -293,6 +295,8 @@
 
     <string name="toast_cant_open_system_equalizer">无法打开系统均衡器</string>
     <string name="toast_crash_saved_to">崩溃日志已保存到{0}</string>
+    <string name="toast_dump_logcat_failed">转储失败：{0}</string>
+    <string name="toast_dump_logcat_success">已转储</string>
     <string name="toast_playlist_exported">导出了 {0, plural, other {#}} 个播放列表</string>
     <string name="toast_playlist_exported_with_failure">导出了 {0, plural, other {#}} 个播放列表，未成功导出 {1, plural, other {#}} 个</string>
     <string name="toast_playlist_imported">导入了 {0, plural, other {#}} 个播放列表</string>

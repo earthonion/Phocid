@@ -154,6 +154,8 @@
     <string name="preferences_dark_theme_light">Light</string>
     <string name="preferences_dark_theme_system">Follow system</string>
     <string name="preferences_data">Data</string>
+    <string name="preferences_dump_logcat">Dump Logcat</string>
+    <string name="preferences_dump_logcat_subtitle">Output path: {0}</string>
     <string name="preferences_folder_picker_dialog_title">Select folder</string>
     <string name="preferences_folder_picker_dialog_up">Up</string>
     <string name="preferences_folder_tab_root">Folder tab root</string>
@@ -311,6 +313,8 @@
 
     <string name="toast_cant_open_system_equalizer">Can’t open system equalizer</string>
     <string name="toast_crash_saved_to">Crash log saved to {0}</string>
+    <string name="toast_dump_logcat_failed">Dump failed: {0}</string>
+    <string name="toast_dump_logcat_success">Dumped logcat</string>
     <string name="toast_playlist_exported">Exported {0, plural, one {# playlist} other {# playlists}}</string>
     <string name="toast_playlist_exported_with_failure">Exported {0, plural, one {# playlist} other {# playlists}}, {1, plural, other {#}} failed</string>
     <string name="toast_playlist_imported">Imported {0, plural, one {# playlist} other {# playlists}}</string>
