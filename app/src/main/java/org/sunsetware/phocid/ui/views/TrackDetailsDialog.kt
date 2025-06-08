@@ -68,7 +68,7 @@ class TrackDetailsDialog(private val track: Track) : Dialog() {
                             .unit(MeasureUnit.KILOBIT)
                             .perUnit(MeasureUnit.SECOND)
                             .precision(Precision.integer())
-                            .format(track.bitRate / 1024.0)
+                            .format(track.bitRate / 1000.0)
                             .toString(),
                     Strings[R.string.track_details_bit_depth] to track.bitDepth.toString(),
                     track.unsyncedLyrics?.let {
