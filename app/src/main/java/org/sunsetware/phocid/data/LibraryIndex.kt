@@ -1237,17 +1237,17 @@ suspend fun scanTracks(
         while (cursor.moveToNext()) {
             val id = cursor.getLong(ci[Media._ID]!!)
             val trackVersion = cursor.getLong(ci[Media.DATE_MODIFIED]!!)
+            val path =
+                cursor
+                    .getString(ci[Media.DATA]!!)
+                    .trimAndNormalize()
+                    .let { FilenameUtils.normalize(it) }
+                    .let { FilenameUtils.separatorsToUnix(it) }
             val oldIndex = old?.tracks?.get(id)
 
-            if (oldIndex?.version == trackVersion) {
+            if (oldIndex?.version == trackVersion && oldIndex.path == path) {
                 tracks += oldIndex
             } else {
-                val path =
-                    cursor
-                        .getString(ci[Media.DATA]!!)
-                        .trimAndNormalize()
-                        .let { FilenameUtils.normalize(it) }
-                        .let { FilenameUtils.separatorsToUnix(it) }
                 val size = cursor.getLong(ci[Media.SIZE]!!)
                 maxSize = max(maxSize, size)
                 crudeTracks +=
