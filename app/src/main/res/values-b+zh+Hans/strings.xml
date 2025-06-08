@@ -252,6 +252,7 @@
     <string name="preferences_widget_layout_extra_large">特大</string>
     <string name="preferences_widget_layout_large">大</string>
     <string name="preferences_widget_layout_medium">中</string>
+    <string name="preferences_widget_layout_side_artwork">侧边图像</string>
     <string name="preferences_widget_layout_small">小</string>
     <string name="preferences_widget_settings">小组件设置</string>
 

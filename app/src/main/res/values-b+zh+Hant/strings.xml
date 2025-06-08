@@ -263,6 +263,7 @@
     <string name="preferences_widget_layout_extra_large">特大</string>
     <string name="preferences_widget_layout_large">大</string>
     <string name="preferences_widget_layout_medium">中</string>
+    <string name="preferences_widget_layout_side_artwork">側邊封面</string>
     <string name="preferences_widget_layout_small">小</string>
     <string name="preferences_widget_settings">小工具設置</string>
 

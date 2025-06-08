@@ -254,12 +254,18 @@ enum class LyricsDisplayPreference(val stringId: Int) {
 }
 
 @Serializable
-enum class WidgetLayout(val stringId: Int, val previewId: Int) {
-    SMALL(R.string.preferences_widget_layout_small, R.drawable.widget_preview_small),
-    MEDIUM(R.string.preferences_widget_layout_medium, R.drawable.widget_preview_medium),
-    LARGE(R.string.preferences_widget_layout_large, R.drawable.widget_preview_large),
+enum class WidgetLayout(val stringId: Int, val previewId: Int, val standaloneArtwork: Boolean) {
+    SMALL(R.string.preferences_widget_layout_small, R.drawable.widget_preview_small, false),
+    MEDIUM(R.string.preferences_widget_layout_medium, R.drawable.widget_preview_medium, false),
+    LARGE(R.string.preferences_widget_layout_large, R.drawable.widget_preview_large, false),
     EXTRA_LARGE(
         R.string.preferences_widget_layout_extra_large,
         R.drawable.widget_preview_extra_large,
+        false,
+    ),
+    SIDE_ARTWORK(
+        R.string.preferences_widget_layout_side_artwork,
+        R.drawable.widget_preview_side_artwork,
+        true,
     ),
 }

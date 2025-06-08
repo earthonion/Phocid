@@ -4,8 +4,10 @@ import android.content.ContentUris
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.ImageDecoder
+import android.graphics.Rect
 import android.net.Uri
 import android.provider.MediaStore
+import android.util.Log
 import android.util.Size
 import android.view.WindowManager
 import java.io.File
@@ -55,6 +57,7 @@ fun loadArtwork(
     path: String?,
     highRes: Boolean = false,
     sizeLimit: Int? = null,
+    crop: Boolean = false,
 ): Bitmap? {
     val forcedSizeLimit =
         sizeLimit
@@ -70,12 +73,12 @@ fun loadArtwork(
             }
 
     return if (highRes) {
-        loadWithLibrary(path, forcedSizeLimit)
-            ?: loadExternal(context, path, forcedSizeLimit)
-            ?: loadWithContentResolver(context, uri, forcedSizeLimit)
+        loadWithLibrary(path, forcedSizeLimit, crop)
+            ?: loadExternal(path, forcedSizeLimit, crop)
+            ?: loadWithContentResolver(context, uri, forcedSizeLimit, crop)
     } else {
-        loadWithContentResolver(context, uri, forcedSizeLimit)
-            ?: loadExternal(context, path, forcedSizeLimit)
+        loadWithContentResolver(context, uri, forcedSizeLimit, crop)
+            ?: loadExternal(path, forcedSizeLimit, crop)
     }
 }
 
@@ -85,6 +88,7 @@ fun loadArtwork(
     path: String?,
     highRes: Boolean = false,
     sizeLimit: Int? = null,
+    crop: Boolean = false,
 ): Bitmap? {
     return loadArtwork(
         context,
@@ -92,10 +96,11 @@ fun loadArtwork(
         path,
         highRes,
         sizeLimit,
+        crop,
     )
 }
 
-private fun loadWithLibrary(path: String?, sizeLimit: Int?): Bitmap? {
+private fun loadWithLibrary(path: String?, sizeLimit: Int?, crop: Boolean): Bitmap? {
     return try {
         requireNotNull(path)
         val extension = FilenameUtils.getExtension(path).lowercase()
@@ -121,26 +126,28 @@ private fun loadWithLibrary(path: String?, sizeLimit: Int?): Bitmap? {
             } else {
                 AudioFileIO.read(File(path)).tag.firstArtwork.binaryData
             }
-        ImageDecoder.decodeBitmap(data.let(ByteBuffer::wrap).let(ImageDecoder::createSource)) {
-            decoder,
-            info,
-            source ->
-            val resizeFactor = sizeLimit?.toFloat()?.div(max(info.size.width, info.size.height))
-            if (
-                resizeFactor != null &&
-                    resizeFactor.isFinite() &&
-                    resizeFactor > 0 &&
-                    resizeFactor < 1
-            ) {
-                decoder.setAllocator(ImageDecoder.ALLOCATOR_SOFTWARE)
-                decoder.setTargetSize(
-                    (resizeFactor * info.size.width)
-                        .roundToIntOrZero()
-                        .coerceIn(1, info.size.width),
-                    (resizeFactor * info.size.height)
-                        .roundToIntOrZero()
-                        .coerceIn(1, info.size.height),
-                )
+        decodeBitmap(data.let(ByteBuffer::wrap).let(ImageDecoder::createSource), sizeLimit, crop)
+    } catch (_: Exception) {
+        null
+    }
+}
+
+private fun loadWithContentResolver(
+    context: Context,
+    uri: Uri,
+    sizeLimit: Int,
+    crop: Boolean,
+): Bitmap? {
+    return try {
+        context.contentResolver.loadThumbnail(uri, Size(sizeLimit, sizeLimit), null).let {
+            // TODO: expand loadThumbnail() and crop inside decoder
+            if (crop && it.width != it.height) {
+                val shortestSide = min(it.width, it.height)
+                val x = (it.width - shortestSide) / 2
+                val y = (it.height - shortestSide) / 2
+                Bitmap.createBitmap(it, x, y, shortestSide, shortestSide)
+            } else {
+                it
             }
         }
     } catch (_: Exception) {
@@ -148,15 +155,7 @@ private fun loadWithLibrary(path: String?, sizeLimit: Int?): Bitmap? {
     }
 }
 
-private fun loadWithContentResolver(context: Context, uri: Uri, sizeLimit: Int): Bitmap? {
-    return try {
-        context.contentResolver.loadThumbnail(uri, Size(sizeLimit, sizeLimit), null)
-    } catch (_: Exception) {
-        null
-    }
-}
-
-private fun loadExternal(context: Context, path: String?, sizeLimit: Int?): Bitmap? {
+private fun loadExternal(path: String?, sizeLimit: Int?, crop: Boolean): Bitmap? {
     if (path == null) return null
 
     val trackName = FilenameUtils.getBaseName(path)
@@ -185,30 +184,36 @@ private fun loadExternal(context: Context, path: String?, sizeLimit: Int?): Bitm
         }
         .sortedByDescending { it.second }
         .firstNotNullOfOrNull { (file, _) ->
-            try {
-                ImageDecoder.decodeBitmap(ImageDecoder.createSource(file)) { decoder, info, source
-                    ->
-                    val resizeFactor =
-                        sizeLimit?.toFloat()?.div(max(info.size.width, info.size.height))
-                    if (
-                        resizeFactor != null &&
-                            resizeFactor.isFinite() &&
-                            resizeFactor > 0 &&
-                            resizeFactor < 1
-                    ) {
-                        decoder.setAllocator(ImageDecoder.ALLOCATOR_SOFTWARE)
-                        decoder.setTargetSize(
-                            (resizeFactor * info.size.width)
-                                .roundToIntOrZero()
-                                .coerceIn(1, info.size.width),
-                            (resizeFactor * info.size.height)
-                                .roundToIntOrZero()
-                                .coerceIn(1, info.size.height),
-                        )
-                    }
-                }
-            } catch (_: Exception) {
-                null
+            decodeBitmap(ImageDecoder.createSource(file), sizeLimit, crop)
+        }
+}
+
+private fun decodeBitmap(source: ImageDecoder.Source, sizeLimit: Int?, crop: Boolean): Bitmap? {
+    return try {
+        ImageDecoder.decodeBitmap(source) { decoder, info, source ->
+            decoder.setAllocator(ImageDecoder.ALLOCATOR_SOFTWARE)
+
+            val resizeFactor =
+                sizeLimit?.toFloat()?.div(max(info.size.width, info.size.height))?.takeIf {
+                    it.isFinite() && it > 0 && it < 1
+                } ?: 1f
+            val finalWidth =
+                (resizeFactor * info.size.width).roundToIntOrZero().coerceIn(1, info.size.width)
+            val finalHeight =
+                (resizeFactor * info.size.height).roundToIntOrZero().coerceIn(1, info.size.height)
+
+            if (resizeFactor != 1f) {
+                decoder.setTargetSize(finalWidth, finalHeight)
+            }
+            if (crop && finalWidth != finalHeight) {
+                val shortestSide = min(finalWidth, finalHeight)
+                val x = (finalWidth - shortestSide) / 2
+                val y = (finalHeight - shortestSide) / 2
+                decoder.crop = Rect(x, y, x + shortestSide, y + shortestSide)
             }
         }
+    } catch (ex: Exception) {
+        Log.e("Phocid", "Can't decode bitmap", ex)
+        null
+    }
 }

@@ -23,6 +23,7 @@ import androidx.glance.ColorFilter
 import androidx.glance.GlanceId
 import androidx.glance.GlanceModifier
 import androidx.glance.GlanceTheme
+import androidx.glance.Image
 import androidx.glance.ImageProvider
 import androidx.glance.LocalContext
 import androidx.glance.action.clickable
@@ -39,10 +40,13 @@ import androidx.glance.layout.Column
 import androidx.glance.layout.ContentScale
 import androidx.glance.layout.Row
 import androidx.glance.layout.Spacer
+import androidx.glance.layout.fillMaxHeight
 import androidx.glance.layout.fillMaxSize
+import androidx.glance.layout.fillMaxWidth
 import androidx.glance.layout.height
 import androidx.glance.layout.padding
 import androidx.glance.layout.size
+import androidx.glance.layout.wrapContentWidth
 import androidx.glance.semantics.contentDescription
 import androidx.glance.semantics.semantics
 import androidx.glance.text.FontWeight
@@ -62,6 +66,7 @@ import org.sunsetware.phocid.globals.GlobalData
 import org.sunsetware.phocid.globals.Strings
 import org.sunsetware.phocid.ui.theme.Typography
 import org.sunsetware.phocid.ui.theme.VARIANT_ALPHA
+import org.sunsetware.phocid.ui.theme.contentColor
 import org.sunsetware.phocid.ui.theme.onPrimaryDark
 import org.sunsetware.phocid.ui.theme.onPrimaryLight
 import org.sunsetware.phocid.ui.theme.onSurfaceDark
@@ -102,7 +107,8 @@ class MainAppWidget : GlanceAppWidget() {
             val currentTrack =
                 remember(libraryIndex, playerState) {
                     libraryIndex.tracks[
-                            playerState.actualPlayQueue.getOrNull(playerState.currentIndex)]
+                            playerState.actualPlayQueue.getOrNull(playerState.currentIndex),
+                        ]
                 }
             var stateBatch by remember { mutableStateOf(null as Track? to null as Bitmap?) }
             val track = stateBatch.first
@@ -113,7 +119,10 @@ class MainAppWidget : GlanceAppWidget() {
                     preferences.widgetArtworkBackground
                 }
             val backgroundColor =
-                artworkColor?.let { lerp(it, Color.Black, 0.4f) }
+                artworkColor?.let {
+                    if (preferences.widgetLayout.standaloneArtwork) it
+                    else lerp(it, Color.Black, 0.4f)
+                }
                     ?: when (colorPreference) {
                         false to false -> surfaceLight
                         false to true -> primaryLight
@@ -122,7 +131,10 @@ class MainAppWidget : GlanceAppWidget() {
                         else -> throw Error()
                     }
             val contentColor =
-                artworkColor?.let { lerp(it, Color.White, 0.9f) }
+                artworkColor?.let {
+                    if (preferences.widgetLayout.standaloneArtwork) it.contentColor()
+                    else lerp(it, Color.White, 0.9f)
+                }
                     ?: when (colorPreference) {
                         false to false -> onSurfaceLight
                         false to true -> onPrimaryLight
@@ -143,7 +155,7 @@ class MainAppWidget : GlanceAppWidget() {
                     0.dp
                 }
 
-            LaunchedEffect(currentTrack) {
+            LaunchedEffect(currentTrack, preferences.widgetLayout.standaloneArtwork) {
                 withContext(Dispatchers.IO) {
                     stateBatch =
                         currentTrack to
@@ -154,6 +166,7 @@ class MainAppWidget : GlanceAppWidget() {
                                     it.path,
                                     preferences.highResArtworkPreference.player,
                                     preferences.widgetArtworkResolutionLimit,
+                                    preferences.widgetLayout.standaloneArtwork,
                                 )
                             }
                 }
@@ -164,7 +177,11 @@ class MainAppWidget : GlanceAppWidget() {
                     modifier =
                         GlanceModifier.cornerRadius(backgroundRadius)
                             .let {
-                                if (artwork != null && preferences.widgetArtworkBackground) {
+                                if (
+                                    artwork != null &&
+                                        preferences.widgetArtworkBackground &&
+                                        !preferences.widgetLayout.standaloneArtwork
+                                ) {
                                     it.background(
                                         ImageProvider(artwork),
                                         contentScale = ContentScale.Crop,
@@ -203,13 +220,7 @@ class MainAppWidget : GlanceAppWidget() {
                                 horizontalAlignment = Alignment.CenterHorizontally,
                                 verticalAlignment = Alignment.CenterVertically,
                                 modifier =
-                                    GlanceModifier.padding(
-                                            start = 24.dp,
-                                            top = 24.dp,
-                                            end = 12.dp,
-                                            bottom = 24.dp,
-                                        )
-                                        .fillMaxSize(),
+                                    GlanceModifier.padding(start = 24.dp, end = 12.dp).fillMaxSize(),
                             ) {
                                 Box(modifier = GlanceModifier.defaultWeight()) {
                                     TrackInfo(track, contentColor, contentColorVariant)
@@ -221,16 +232,20 @@ class MainAppWidget : GlanceAppWidget() {
                             Column(
                                 horizontalAlignment = Alignment.Start,
                                 verticalAlignment = Alignment.CenterVertically,
-                                modifier = GlanceModifier.padding(12.dp).fillMaxSize(),
+                                modifier = GlanceModifier.padding(horizontal = 12.dp).fillMaxSize(),
                             ) {
-                                Spacer(modifier = GlanceModifier.height(14.dp))
                                 TrackInfo(
                                     track,
                                     contentColor,
                                     contentColorVariant,
                                     modifier = GlanceModifier.padding(horizontal = 14.dp),
                                 )
-                                Controls(context, playerTransientState.isPlaying, contentColor)
+                                Controls(
+                                    context,
+                                    playerTransientState.isPlaying,
+                                    contentColor,
+                                    modifier = GlanceModifier.padding(bottom = (-14).dp),
+                                )
                             }
                         }
                         WidgetLayout.EXTRA_LARGE -> {
@@ -247,6 +262,38 @@ class MainAppWidget : GlanceAppWidget() {
                                     modifier = GlanceModifier.padding(horizontal = 14.dp),
                                 )
                                 Controls(context, playerTransientState.isPlaying, contentColor)
+                            }
+                        }
+                        WidgetLayout.SIDE_ARTWORK -> {
+                            Row {
+                                ArtworkImage(
+                                    artwork,
+                                    backgroundColor,
+                                    isDarkTheme,
+                                    modifier = GlanceModifier.fillMaxHeight().wrapContentWidth(),
+                                )
+                                Column(
+                                    horizontalAlignment = Alignment.Start,
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier =
+                                        GlanceModifier.padding(horizontal = 12.dp).fillMaxHeight(),
+                                ) {
+                                    TrackInfo(
+                                        track,
+                                        contentColor,
+                                        contentColorVariant,
+                                        modifier =
+                                            GlanceModifier.padding(start = 14.dp, end = 14.dp),
+                                    )
+                                    Controls(
+                                        context,
+                                        playerTransientState.isPlaying,
+                                        contentColor,
+                                        spread = true,
+                                        modifier =
+                                            GlanceModifier.fillMaxWidth().padding(bottom = (-14).dp),
+                                    )
+                                }
                             }
                         }
                     }
@@ -294,6 +341,7 @@ class MainAppWidget : GlanceAppWidget() {
         isPlaying: Boolean,
         contentColor: Color,
         modifier: GlanceModifier = GlanceModifier,
+        spread: Boolean = false,
     ) {
         Row(modifier) {
             IconButton(
@@ -307,6 +355,9 @@ class MainAppWidget : GlanceAppWidget() {
                     }
                 },
             )
+            if (spread) {
+                Box(modifier = GlanceModifier.defaultWeight()) {}
+            }
             IconButton(
                 if (isPlaying) R.drawable.player_pause else R.drawable.player_play,
                 if (isPlaying) Strings[R.string.player_pause] else Strings[R.string.player_play],
@@ -315,6 +366,9 @@ class MainAppWidget : GlanceAppWidget() {
                     withController(context) { if (it.isPlaying) it.pause() else it.play() }
                 },
             )
+            if (spread) {
+                Box(modifier = GlanceModifier.defaultWeight()) {}
+            }
             IconButton(
                 R.drawable.player_next,
                 Strings[R.string.player_next],
@@ -354,6 +408,48 @@ class MainAppWidget : GlanceAppWidget() {
                         )
                         .size(24.dp)
             ) {}
+        }
+    }
+
+    @Composable
+    private fun ArtworkImage(
+        artwork: Bitmap?,
+        color: Color,
+        darkTheme: Boolean,
+        modifier: GlanceModifier,
+    ) {
+        if (artwork != null) {
+            Image(
+                ImageProvider(artwork),
+                null,
+                contentScale = ContentScale.Fit,
+                modifier = modifier,
+            )
+        } else {
+            Box {
+                Image(
+                    ImageProvider(R.drawable.widget_artwork_placeholder_background),
+                    null,
+                    contentScale = ContentScale.Fit,
+                    colorFilter =
+                        ColorFilter.tint(
+                            @SuppressLint("RestrictedApi")
+                            ColorProvider(
+                                if (darkTheme) lerp(color, Color.Black, 0.4f)
+                                else lerp(color, Color.White, 0.9f)
+                            )
+                        ),
+                    modifier = modifier,
+                )
+                Image(
+                    ImageProvider(R.drawable.widget_artwork_placeholder_foreground),
+                    null,
+                    contentScale = ContentScale.Fit,
+                    colorFilter =
+                        ColorFilter.tint(@SuppressLint("RestrictedApi") ColorProvider(color)),
+                    modifier = modifier,
+                )
+            }
         }
     }
 
