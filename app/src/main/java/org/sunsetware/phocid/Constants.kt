@@ -16,6 +16,8 @@ const val UI_STATE_FILE_NAME = "uiState"
 
 const val UNSHUFFLED_INDEX_KEY = "originalIndex"
 const val SET_TIMER_COMMAND = "setTimer"
+const val EXTERNAL_REPEAT_COMMAND = "repeat"
+const val EXTERNAL_SHUFFLE_COMMAND = "shuffle"
 const val TIMER_TARGET_KEY = "timerTarget"
 const val TIMER_FINISH_LAST_TRACK_KEY = "timerFinishLastTrack"
 const val FILE_PATH_KEY = "filePath"

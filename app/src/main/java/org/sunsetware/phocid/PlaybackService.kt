@@ -17,6 +17,7 @@ import androidx.media3.common.PlaybackParameters
 import androidx.media3.common.Player
 import androidx.media3.common.TrackSelectionParameters.AudioOffloadPreferences
 import androidx.media3.common.util.UnstableApi
+import androidx.media3.session.CommandButton
 import androidx.media3.session.LibraryResult
 import androidx.media3.session.MediaLibraryService
 import androidx.media3.session.MediaSession
@@ -50,6 +51,7 @@ import org.sunsetware.phocid.data.transformMediaSessionCallbackItems
 import org.sunsetware.phocid.data.transformOnAddTracks
 import org.sunsetware.phocid.data.transformOnSetTracks
 import org.sunsetware.phocid.globals.GlobalData
+import org.sunsetware.phocid.globals.Strings
 import org.sunsetware.phocid.service.CustomizedBitmapLoader
 import org.sunsetware.phocid.service.CustomizedPlayer
 import org.sunsetware.phocid.utils.Random
@@ -111,7 +113,7 @@ class PlaybackService : MediaLibraryService() {
             MediaLibrarySession.Builder(
                     this,
                     player,
-                    createMediaSessionCallback(player, mapOf(SET_TIMER_COMMAND to ::onSetTimer)),
+                    createMediaSessionCallback(player, playerCommands),
                 )
                 .setSessionActivity(
                     PendingIntent.getActivity(
@@ -123,6 +125,7 @@ class PlaybackService : MediaLibraryService() {
                 )
                 .setBitmapLoader(CustomizedBitmapLoader(this))
                 .setSessionExtras(bundleOf(AUDIO_SESSION_ID_KEY to player.inner.audioSessionId))
+                .setMediaButtonPreferences(commandButtons(player))
                 .build()
     }
 
@@ -151,6 +154,7 @@ class PlaybackService : MediaLibraryService() {
             override fun onEvents(player: Player, events: Player.Events) {
                 GlobalData.playerState.update { player.capturePlayerState() }
                 GlobalData.playerTransientState.update { player.captureTransientState() }
+                mediaSession?.setMediaButtonPreferences(commandButtons(player))
 
                 if (
                     events.containsAny(
@@ -179,6 +183,7 @@ class PlaybackService : MediaLibraryService() {
             override fun onShuffleModeEnabledChanged(shuffleModeEnabled: Boolean) {
                 // onEvent won't trigger for this...
                 GlobalData.playerState.update { player.capturePlayerState() }
+                mediaSession?.setMediaButtonPreferences(commandButtons(player))
             }
 
             override fun onPlaybackParametersChanged(playbackParameters: PlaybackParameters) {
@@ -374,6 +379,7 @@ class PlaybackService : MediaLibraryService() {
                             )
                             .build()
                     )
+                    .setMediaButtonPreferences(commandButtons(player))
                     .build()
             }
         }
@@ -391,6 +397,46 @@ class PlaybackService : MediaLibraryService() {
     // endregion
 
     // region Commands
+
+    private val playerCommands =
+        mapOf(
+            SET_TIMER_COMMAND to ::onSetTimer,
+            EXTERNAL_REPEAT_COMMAND to ::onExternalRepeat,
+            EXTERNAL_SHUFFLE_COMMAND to ::onExternalShuffle,
+        )
+
+    private fun commandButtons(player: Player): List<CommandButton> {
+        return listOf(
+            CommandButton.Builder(
+                    when (player.repeatMode) {
+                        Player.REPEAT_MODE_ALL -> CommandButton.ICON_REPEAT_ALL
+                        Player.REPEAT_MODE_ONE -> CommandButton.ICON_REPEAT_ONE
+                        else -> CommandButton.ICON_REPEAT_OFF
+                    }
+                )
+                .setDisplayName(
+                    when (player.repeatMode) {
+                        Player.REPEAT_MODE_ALL -> Strings[R.string.player_repeat_mode_all]
+                        Player.REPEAT_MODE_ONE -> Strings[R.string.player_repeat_mode_one]
+                        else -> Strings[R.string.player_repeat_mode_off]
+                    }
+                )
+                .setSessionCommand(SessionCommand(EXTERNAL_REPEAT_COMMAND, bundleOf()))
+                .setSlots(CommandButton.SLOT_OVERFLOW)
+                .build(),
+            CommandButton.Builder(
+                    if (player.shuffleModeEnabled) CommandButton.ICON_SHUFFLE_ON
+                    else CommandButton.ICON_SHUFFLE_OFF
+                )
+                .setDisplayName(
+                    if (player.shuffleModeEnabled) Strings[R.string.player_shuffle_on]
+                    else Strings[R.string.player_shuffle_off]
+                )
+                .setSessionCommand(SessionCommand(EXTERNAL_SHUFFLE_COMMAND, bundleOf()))
+                .setSlots(CommandButton.SLOT_OVERFLOW)
+                .build(),
+        )
+    }
 
     private fun newTimerJob(player: Player): Job {
         return mainScope.launch {
@@ -432,6 +478,28 @@ class PlaybackService : MediaLibraryService() {
                 timerJob = newTimerJob(player)
             }
         }
+    }
+
+    private fun onExternalRepeat(
+        player: CustomizedPlayer,
+        @Suppress("unused") session: MediaSession,
+        @Suppress("unused") args: Bundle,
+    ) {
+        player.repeatMode =
+            when (player.repeatMode) {
+                Player.REPEAT_MODE_OFF -> Player.REPEAT_MODE_ALL
+                Player.REPEAT_MODE_ALL -> Player.REPEAT_MODE_ONE
+                Player.REPEAT_MODE_ONE -> Player.REPEAT_MODE_OFF
+                else -> Player.REPEAT_MODE_OFF
+            }
+    }
+
+    private fun onExternalShuffle(
+        player: CustomizedPlayer,
+        @Suppress("unused") session: MediaSession,
+        @Suppress("unused") args: Bundle,
+    ) {
+        player.shuffleModeEnabled = !player.shuffleModeEnabled
     }
 
     // endregion
