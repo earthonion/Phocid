@@ -154,7 +154,7 @@ fun Track.getMediaItem(unshuffledIndex: Int?): MediaItem {
                     .setTitle(displayTitle)
                     .setArtist(displayArtist)
                     .setAlbumTitle(album)
-                    .setAlbumArtist(albumArtist)
+                    .setAlbumArtist(displayAlbumArtist)
                     .setExtras(bundleOf(URI_KEY to uri.toString(), FILE_PATH_KEY to path))
                     .build()
             )

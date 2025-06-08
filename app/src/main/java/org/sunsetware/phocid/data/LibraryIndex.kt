@@ -1,4 +1,4 @@
-@file:OptIn(ExperimentalEncodingApi::class)
+@file:OptIn(ExperimentalEncodingApi::class, ExperimentalSerializationApi::class)
 
 package org.sunsetware.phocid.data
 
@@ -36,6 +36,8 @@ import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.serialization.EncodeDefault
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import org.apache.commons.io.FilenameUtils
@@ -77,7 +79,8 @@ data class Track(
     val title: String?,
     val artists: List<String>,
     val album: String?,
-    val albumArtist: String?,
+    @Deprecated("") @EncodeDefault(EncodeDefault.Mode.NEVER) val albumArtist: String? = null,
+    val albumArtists: List<String> = emptyList(),
     val genres: List<String>,
     val year: Int?,
     val trackNumber: Int?,
@@ -94,6 +97,12 @@ data class Track(
     val unsyncedLyrics: String?,
     val comment: String?,
 ) : Searchable, Sortable {
+    @Suppress("DEPRECATION")
+    fun upgrade(): Track {
+        return if (albumArtist == null) this
+        else copy(albumArtist = null, albumArtists = listOfNotNull(albumArtist))
+    }
+
     val uri
         get() = ContentUris.withAppendedId(Media.EXTERNAL_CONTENT_URI, id)
 
@@ -110,7 +119,7 @@ data class Track(
         get() = album ?: UNKNOWN
 
     val displayAlbumArtist
-        get() = albumArtist ?: UNKNOWN
+        get() = if (albumArtists.any()) Strings.conjoin(albumArtists) else UNKNOWN
 
     val displayGenre
         get() = if (genres.any()) Strings.conjoin(genres) else UNKNOWN
@@ -139,7 +148,7 @@ data class Track(
 
     @Transient
     override val searchableStrings =
-        listOfNotNull(displayTitle, displayArtist, album, albumArtist, fileName)
+        listOfNotNull(displayTitle, displayArtist, album, displayAlbumArtist, fileName)
 
     override val sortTitle
         get() = displayTitle
@@ -151,7 +160,7 @@ data class Track(
         get() = album ?: ""
 
     override val sortAlbumArtist
-        get() = albumArtist ?: album?.let { artists.firstOrNull() } ?: ""
+        get() = displayAlbumArtist
 
     override val sortDiscNumber
         get() = discNumber ?: 0
@@ -314,6 +323,7 @@ val InvalidTrack =
         null,
         null,
         emptyList(),
+        emptyList(),
         null,
         null,
         null,
@@ -333,26 +343,26 @@ val InvalidTrack =
 @Immutable
 data class Album(
     val name: String,
-    val albumArtist: String? = null,
+    val albumArtists: List<String> = emptyList(),
     val year: Int? = null,
     val tracks: List<Track> = emptyList(),
 ) : Searchable, Sortable {
     val displayAlbumArtist
         get() =
-            albumArtist
+            albumArtists.takeIf { it.isNotEmpty() }?.let(Strings::conjoin)
                 ?: tracks
                     .flatMap { it.artists }
                     .modeOrNull()
                     ?.let { Strings[R.string.track_inferred_album_artist].icuFormat(it) }
                 ?: UNKNOWN
 
-    @Transient override val searchableStrings = listOfNotNull(name, albumArtist)
+    @Transient override val searchableStrings = listOf(name, displayAlbumArtist)
 
     override val sortAlbum
         get() = name
 
     override val sortAlbumArtist
-        get() = albumArtist ?: ""
+        get() = displayAlbumArtist
 
     override val sortYear
         get() = year ?: 0
@@ -435,7 +445,11 @@ data class Album(
     }
 }
 
-data class AlbumKey(val name: CaseInsensitiveString, val albumArtist: CaseInsensitiveString?) {
+@Immutable
+data class AlbumKey(
+    val name: CaseInsensitiveString,
+    val albumArtists: List<CaseInsensitiveString>,
+) {
     /**
      * Since the default [toString] doesn't escape strings, two different [AlbumKey]s could still
      * theoretically collide without overriding this.
@@ -443,26 +457,27 @@ data class AlbumKey(val name: CaseInsensitiveString, val albumArtist: CaseInsens
      * TODO: Find a less hacky hack
      */
     override fun toString(): String {
-        return Base64.encode(name.string.toByteArray(Charsets.UTF_8)) +
-            " " +
-            (albumArtist?.string?.let { Base64.encode(it.toByteArray(Charsets.UTF_8)) } ?: "?")
+        return listOf(Base64.encode(name.string.toByteArray(Charsets.UTF_8)))
+            .plus(
+                albumArtists.map {
+                    it.string?.let { Base64.encode(it.toByteArray(Charsets.UTF_8)) }
+                }
+            )
+            .joinToString(" ")
     }
 
     constructor(
         name: String,
-        albumArtist: String?,
-    ) : this(CaseInsensitiveString(name), albumArtist?.let { CaseInsensitiveString(it) })
+        albumArtists: List<String>,
+    ) : this(CaseInsensitiveString(name), albumArtists.map { CaseInsensitiveString(it) })
 }
 
 fun AlbumKey(string: String): AlbumKey? {
     try {
-        val segments = string.split(' ', limit = 2)
+        val segments = string.split(' ')
         return AlbumKey(
             Base64.decode(segments[0]).toString(Charsets.UTF_8),
-            segments
-                .getOrNull(1)
-                ?.takeIf { it != "?" }
-                ?.let { Base64.decode(it).toString(Charsets.UTF_8) },
+            segments.drop(1).map { Base64.decode(it).toString(Charsets.UTF_8) },
         )
     } catch (ex: Exception) {
         Log.e("Phocid", "Attempted to decode an invalid AlbumKey $string", ex)
@@ -471,9 +486,9 @@ fun AlbumKey(string: String): AlbumKey? {
 }
 
 val Track.albumKey: AlbumKey?
-    get() = album?.let { AlbumKey(it, albumArtist) }
+    get() = album?.let { AlbumKey(it, albumArtists) }
 val Album.albumKey: AlbumKey
-    get() = AlbumKey(name, albumArtist)
+    get() = AlbumKey(name, albumArtists)
 
 @Immutable
 data class Artist(
@@ -961,6 +976,10 @@ data class UnfilteredTrackIndex(
      */
     @Transient val flowVersion: Long = flowVersionCounter.getAndIncrement(),
 ) {
+    fun upgrade(): UnfilteredTrackIndex {
+        return copy(tracks = tracks.mapValues { it.value.upgrade() })
+    }
+
     fun getFolders(collator: Collator): Pair<Map<String, Folder>, String> {
         val folders = getFolders(tracks.values, collator)
         return folders to getRootFolder(folders)
@@ -1016,13 +1035,13 @@ fun LibraryIndex(
 
 private fun getAlbums(tracks: Collection<Track>, collator: Collator): Map<AlbumKey, Album> {
     return tracks
-        .groupBy { if (it.album != null) AlbumKey(it.album, it.albumArtist) else null }
+        .groupBy { if (it.album != null) AlbumKey(it.album, it.albumArtists) else null }
         .filter { it.key != null }
         .map { (_, tracks) ->
             val sortedTracks =
                 tracks.sorted(collator, Album.TrackSortingOptions.values.first().keys, true)
             val name = sortedTracks.mode { it.album!! }
-            val albumArtist = sortedTracks.mode { it.albumArtist }
+            val albumArtist = sortedTracks.mode { it.albumArtists }
             AlbumKey(name, albumArtist) to
                 Album(name, albumArtist, sortedTracks.mode { it.year }, sortedTracks)
         }
@@ -1044,7 +1063,7 @@ private fun getArtists(
                     .sorted(collator, Artist.TrackSortingOptions.values.first().keys, true)
             val albumSlices =
                 artistTracks
-                    .groupBy { if (it.album != null) AlbumKey(it.album, it.albumArtist) else null }
+                    .groupBy { if (it.album != null) AlbumKey(it.album, it.albumArtists) else null }
                     .filter { it.key != null }
                     .map {
                         AlbumSlice(
@@ -1069,12 +1088,12 @@ private fun getAlbumArtists(
     collator: Collator,
 ): CaseInsensitiveMap<AlbumArtist> {
     return albums.values
-        .mapNotNull { it.albumArtist }
+        .flatMap { it.albumArtists }
         .distinctCaseInsensitive()
         .associateWith { name ->
             val albumArtistAlbums =
                 albums.values
-                    .filter { it.albumArtist.equals(name, true) }
+                    .filter { it.albumArtists.any { it.equals(name, true) } }
                     .sorted(collator, Album.CollectionSortingOptions.values.first().keys, true)
             val albumArtistTracks = albumArtistAlbums.flatMap { it.tracks }
             AlbumArtist(name, albumArtistTracks, albumArtistAlbums)
@@ -1244,8 +1263,10 @@ suspend fun scanTracks(
                                 cursor.getStringOrNull(ci[Media.ARTIST]!!)?.trimAndNormalize()
                             ),
                         album = cursor.getStringOrNull(ci[Media.ALBUM]!!)?.trimAndNormalize(),
-                        albumArtist =
-                            cursor.getStringOrNull(ci[Media.ALBUM_ARTIST]!!)?.trimAndNormalize(),
+                        albumArtists =
+                            listOfNotNull(
+                                cursor.getStringOrNull(ci[Media.ALBUM_ARTIST]!!)?.trimAndNormalize()
+                            ),
                         genres =
                             listOfNotNull(
                                 cursor.getStringOrNull(ci[Media.GENRE]!!)?.trimAndNormalize()
@@ -1351,7 +1372,7 @@ private fun scanTrack(
     var title = crudeTrack.title
     var artists = crudeTrack.artists
     var album = crudeTrack.album
-    var albumArtist = crudeTrack.albumArtist
+    var albumArtists = crudeTrack.albumArtists
     var genres = crudeTrack.genres
     var year = crudeTrack.year
     var trackNumber = crudeTrack.trackNumber
@@ -1372,7 +1393,7 @@ private fun scanTrack(
         title = comments[VORBIS_COMMENT_TITLE]?.firstOrNull() ?: title
         artists = comments[VORBIS_COMMENT_ARTIST] ?: artists
         album = comments[VORBIS_COMMENT_ALBUM]?.firstOrNull() ?: album
-        albumArtist = comments[VORBIS_COMMENT_UNOFFICIAL_ALBUMARTIST]?.firstOrNull() ?: albumArtist
+        albumArtists = comments[VORBIS_COMMENT_UNOFFICIAL_ALBUMARTIST] ?: albumArtists
         genres = comments[VORBIS_COMMENT_GENRE] ?: genres
         year = comments[VORBIS_COMMENT_DATE]?.firstNotNullOfOrNull { it.toIntOrNull() } ?: year
         trackNumber =
@@ -1409,7 +1430,11 @@ private fun scanTrack(
             album = file.tag.getFirst(FieldKey.ALBUM)
         } catch (_: KeyNotFoundException) {}
         try {
-            albumArtist = file.tag.getFirst(FieldKey.ALBUM_ARTIST)
+            albumArtists =
+                file.tag
+                    .getFields(FieldKey.ALBUM_ARTIST)
+                    .filter { !it.isBinary }
+                    .map { (it as TagTextField).content }
         } catch (_: KeyNotFoundException) {}
         try {
             genres =
@@ -1479,7 +1504,7 @@ private fun scanTrack(
     title = title?.takeIf { it.isNotEmpty() }?.trimAndNormalize()
     artists = splitArtists(title, artists, artistSeparators, artistSeparatorExceptions)
     album = album?.takeIf { it.isNotEmpty() }?.trimAndNormalize()
-    albumArtist = albumArtist?.takeIf { it.isNotEmpty() }?.trimAndNormalize()
+    albumArtists = splitArtists(null, albumArtists, artistSeparators, artistSeparatorExceptions)
     genres = splitGenres(genres, genreSeparators, genreSeparatorExceptions)
 
     val palette =
@@ -1500,7 +1525,7 @@ private fun scanTrack(
         title = title,
         artists = artists,
         album = album,
-        albumArtist = albumArtist,
+        albumArtists = albumArtists,
         genres = genres,
         year = year,
         trackNumber = trackNumber,

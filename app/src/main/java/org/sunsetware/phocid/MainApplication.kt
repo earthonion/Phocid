@@ -57,7 +57,7 @@ class MainApplication : Application() {
                 unfilteredTrackIndex =
                     MutableStateFlow(
                         loadCbor<UnfilteredTrackIndex>(context, TRACK_INDEX_FILE_NAME, false)
-                            ?: UnfilteredTrackIndex(null, emptyMap())
+                            ?.upgrade() ?: UnfilteredTrackIndex(null, emptyMap())
                     )
                 playerState =
                     MutableStateFlow(
