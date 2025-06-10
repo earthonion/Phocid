@@ -268,4 +268,9 @@ enum class WidgetLayout(val stringId: Int, val previewId: Int, val standaloneArt
         R.drawable.widget_preview_side_artwork,
         true,
     ),
+    SIDE_ARTWORK_LARGE(
+        R.string.preferences_widget_layout_side_artwork_large,
+        R.drawable.widget_preview_side_artwork_large,
+        true,
+    ),
 }

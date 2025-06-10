@@ -269,6 +269,7 @@
     <string name="preferences_widget_layout_large">Large</string>
     <string name="preferences_widget_layout_medium">Medium</string>
     <string name="preferences_widget_layout_side_artwork">Side artwork</string>
+    <string name="preferences_widget_layout_side_artwork_large">Side artwork (large)</string>
     <string name="preferences_widget_layout_small">Small</string>
     <string name="preferences_widget_settings">Widget settings</string>
 

@@ -296,6 +296,37 @@ class MainAppWidget : GlanceAppWidget() {
                                 }
                             }
                         }
+                        WidgetLayout.SIDE_ARTWORK_LARGE -> {
+                            Row {
+                                ArtworkImage(
+                                    artwork,
+                                    backgroundColor,
+                                    isDarkTheme,
+                                    modifier = GlanceModifier.fillMaxHeight().wrapContentWidth(),
+                                )
+                                Column(
+                                    horizontalAlignment = Alignment.Start,
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = GlanceModifier.fillMaxHeight(),
+                                ) {
+                                    TrackInfo(
+                                        track,
+                                        contentColor,
+                                        contentColorVariant,
+                                        modifier =
+                                            GlanceModifier.padding(start = 14.dp, end = 14.dp),
+                                    )
+                                    Controls(
+                                        context,
+                                        playerTransientState.isPlaying,
+                                        contentColor,
+                                        spread = true,
+                                        modifier =
+                                            GlanceModifier.fillMaxWidth().padding(bottom = (-14).dp),
+                                    )
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -343,7 +374,7 @@ class MainAppWidget : GlanceAppWidget() {
         modifier: GlanceModifier = GlanceModifier,
         spread: Boolean = false,
     ) {
-        Row(modifier) {
+        Row(horizontalAlignment = Alignment.CenterHorizontally, modifier = modifier) {
             IconButton(
                 R.drawable.player_previous,
                 Strings[R.string.player_previous],
