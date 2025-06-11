@@ -35,6 +35,7 @@ import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.core.view.HapticFeedbackConstantsCompat
 import androidx.core.view.ViewCompat
@@ -47,11 +48,13 @@ import org.sunsetware.phocid.ui.components.LibraryListItemHorizontal
 import org.sunsetware.phocid.ui.components.OverflowMenu
 import org.sunsetware.phocid.ui.components.Scrollbar
 import org.sunsetware.phocid.ui.components.SwipeToDismiss
+import org.sunsetware.phocid.ui.components.negativePadding
 import org.sunsetware.phocid.ui.theme.contentColor
 import org.sunsetware.phocid.ui.theme.darken
 import org.sunsetware.phocid.ui.views.MenuItem
 import org.sunsetware.phocid.utils.icuFormat
 import org.sunsetware.phocid.utils.sumOfDuration
+import org.sunsetware.phocid.utils.toLocalizedString
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
 
@@ -163,7 +166,7 @@ class PlayerScreenQueueDefaultBase(
 
                 Scrollbar(
                     lazyListState,
-                    { (it - currentTrackIndex).toString() },
+                    { (it - currentTrackIndex).toLocalizedString() },
                     alwaysShowHintOnScroll,
                 ) {
                     LazyColumn(
@@ -186,13 +189,17 @@ class PlayerScreenQueueDefaultBase(
                                         lead = {
                                             AnimatedContent(
                                                 targetState =
-                                                    (index - currentTrackIndex).toString(),
+                                                    (index - currentTrackIndex).toLocalizedString(),
                                                 transitionSpec = { fadeIn() togetherWith fadeOut() },
                                             ) {
                                                 Text(
                                                     text = it,
                                                     textAlign = TextAlign.Center,
-                                                    modifier = Modifier.fillMaxWidth(),
+                                                    modifier =
+                                                        Modifier.negativePadding(horizontal = 16.dp)
+                                                            .fillMaxWidth(),
+                                                    maxLines = 1,
+                                                    overflow = TextOverflow.Visible,
                                                 )
                                             }
                                         },

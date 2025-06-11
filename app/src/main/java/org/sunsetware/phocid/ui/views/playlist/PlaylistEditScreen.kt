@@ -68,6 +68,7 @@ import org.sunsetware.phocid.ui.views.MenuItem
 import org.sunsetware.phocid.ui.views.playlistCollectionMenuItemsWithoutEdit
 import org.sunsetware.phocid.utils.icuFormat
 import org.sunsetware.phocid.utils.swap
+import org.sunsetware.phocid.utils.toLocalizedString
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
 
@@ -175,7 +176,7 @@ class PlaylistEditScreen(private val playlistKey: UUID) : TopLevelScreen() {
             ) {
                 Scrollbar(
                     lazyListState,
-                    { (it + 1).toString() },
+                    { (it + 1).toLocalizedString() },
                     preferences.alwaysShowHintOnScroll,
                 ) {
                     LazyColumn(state = lazyListState, modifier = Modifier.fillMaxSize()) {

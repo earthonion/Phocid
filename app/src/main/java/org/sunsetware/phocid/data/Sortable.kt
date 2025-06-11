@@ -10,6 +10,7 @@ import kotlinx.serialization.Serializable
 import org.sunsetware.phocid.R
 import org.sunsetware.phocid.globals.Strings
 import org.sunsetware.phocid.utils.initialLetter
+import org.sunsetware.phocid.utils.toLocalizedString
 
 /**
  * All properties should return null if and only if this type doesn't support that property. Missing
@@ -180,9 +181,9 @@ inline fun <T> Iterable<T>.hintBy(
                     DateFormat.getInstance().format(Date(sortable.sortDateAdded!! * 1000))
                 SortingKey.DATE_MODIFIED ->
                     DateFormat.getInstance().format(Date(sortable.sortDateModified!! * 1000))
-                SortingKey.TRACK_COUNT -> sortable.sortTrackCount!!.toString()
-                SortingKey.ALBUM_COUNT -> sortable.sortAlbumCount!!.toString()
-                null -> (index + 1).toString()
+                SortingKey.TRACK_COUNT -> sortable.sortTrackCount!!.toLocalizedString()
+                SortingKey.ALBUM_COUNT -> sortable.sortAlbumCount!!.toLocalizedString()
+                null -> (index + 1).toLocalizedString()
             }
     }
 }

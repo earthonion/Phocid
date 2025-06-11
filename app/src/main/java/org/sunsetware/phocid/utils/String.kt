@@ -2,11 +2,13 @@ package org.sunsetware.phocid.utils
 
 import android.util.Log
 import com.ibm.icu.lang.UCharacter
+import com.ibm.icu.number.NumberFormatter
 import com.ibm.icu.text.CharsetDetector
 import com.ibm.icu.text.MessageFormat
 import com.ibm.icu.text.Normalizer2
 import java.nio.ByteBuffer
 import java.nio.charset.Charset
+import java.util.Locale
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.MapSerializer
@@ -44,6 +46,22 @@ fun ByteArray.decodeWithCharsetName(charsetName: String?): String {
 
 fun Iterable<String>.distinctCaseInsensitive(): List<String> {
     return groupBy { casefolder.normalize(it) }.map { it.value.mode() }
+}
+
+fun Int.toLocalizedString(): String {
+    return NumberFormatter.withLocale(Locale.getDefault()).format(this).toString()
+}
+
+fun Long.toLocalizedString(): String {
+    return NumberFormatter.withLocale(Locale.getDefault()).format(this).toString()
+}
+
+fun Float.toLocalizedString(): String {
+    return NumberFormatter.withLocale(Locale.getDefault()).format(this).toString()
+}
+
+fun Double.toLocalizedString(): String {
+    return NumberFormatter.withLocale(Locale.getDefault()).format(this).toString()
 }
 
 @Serializable(with = CaseInsensitiveMapSerializer::class)
