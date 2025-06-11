@@ -326,6 +326,40 @@ object PreferencesScreen : TopLevelScreen() {
                                 )
                             },
                     )
+                    UtilityListItem(
+                        title = Strings[R.string.preferences_lyrics_scaling],
+                        subtitle =
+                            Strings[R.string.preferences_ui_scaling_number].icuFormat(
+                                preferences.lyricsSizeMultiplier
+                            ),
+                        modifier =
+                            Modifier.clickable {
+                                uiManager.openDialog(
+                                    PreferencesSteppedSliderDialog(
+                                        title = Strings[R.string.preferences_lyrics_scaling],
+                                        initialValue = {
+                                            it.preferences.value.lyricsSizeMultiplier
+                                                .times(100)
+                                                .roundToIntOrZero()
+                                        },
+                                        defaultValue = 100,
+                                        min = 50,
+                                        max = 400,
+                                        numberFormatter = {
+                                            Strings[R.string.preferences_ui_scaling_number]
+                                                .icuFormat(it / 100f)
+                                        },
+                                        onSetValue = { viewModel, value ->
+                                            viewModel.updatePreferences { preferences ->
+                                                preferences.copy(
+                                                    lyricsSizeMultiplier = value / 100f
+                                                )
+                                            }
+                                        },
+                                    )
+                                )
+                            },
+                    )
                     UtilityListHeader(Strings[R.string.preferences_playback])
                     UtilityListItem(
                         title = Strings[R.string.preferences_system_equalizer],

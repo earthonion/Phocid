@@ -54,6 +54,7 @@ data class Preferences(
     val sortingLocaleLanguageTag: String? = null,
     val lyricsDisplay: LyricsDisplayPreference = LyricsDisplayPreference.DEFAULT,
     val densityMultiplier: Float = 1f,
+    val lyricsSizeMultiplier: Float = 1f,
     // Playback
     val playOnOutputDeviceConnection: Boolean = false,
     val pauseOnFocusLoss: Boolean = true,

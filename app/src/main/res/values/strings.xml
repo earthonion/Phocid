@@ -210,6 +210,7 @@
     <string name="preferences_lyrics_display_default">Default</string>
     <string name="preferences_lyrics_display_disabled">Disabled</string>
     <string name="preferences_lyrics_display_two_lines">Two lines</string>
+    <string name="preferences_lyrics_scaling">Lyrics scaling</string>
     <string name="preferences_pause_on_focus_loss">Pause on audio focus loss</string>
     <string name="preferences_play_on_output_device_connection">Play on headphones connection</string>
     <string name="preferences_playback">Playback</string>

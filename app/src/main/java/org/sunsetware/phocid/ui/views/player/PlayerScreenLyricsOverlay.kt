@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -23,7 +24,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.delay
@@ -96,57 +99,63 @@ object PlayerScreenLyricsOverlayDefault : PlayerScreenLyricsOverlay() {
             }
         }
 
-        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.BottomCenter) {
-            Box(
-                modifier =
-                    Modifier.alpha(alpha.value)
-                        .padding(start = 16.dp, end = 16.dp, bottom = 16.dp)
-                        .background(containerColor, RoundedCornerShape(4.dp))
-                        .padding(8.dp)
-            ) {
-                when (preferences.lyricsDisplay) {
-                    LyricsDisplayPreference.DISABLED -> {}
-                    LyricsDisplayPreference.DEFAULT -> {
-                        AnimatedContent(
-                            currentLine,
-                            transitionSpec = {
-                                fadeIn(emphasizedExit()) togetherWith fadeOut(emphasizedExit())
-                            },
-                            contentAlignment = Alignment.TopStart,
-                        ) { animatedLine ->
-                            Text(
-                                animatedLine,
-                                style = Typography.bodyLarge,
-                                color = contentColor,
-                                textAlign = TextAlign.Center,
-                            )
+        val density = LocalDensity.current
+        CompositionLocalProvider(
+            LocalDensity provides
+                Density(density.density, density.fontScale * preferences.lyricsSizeMultiplier)
+        ) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.BottomCenter) {
+                Box(
+                    modifier =
+                        Modifier.alpha(alpha.value)
+                            .padding(start = 16.dp, end = 16.dp, bottom = 16.dp)
+                            .background(containerColor, RoundedCornerShape(4.dp))
+                            .padding(8.dp)
+                ) {
+                    when (preferences.lyricsDisplay) {
+                        LyricsDisplayPreference.DISABLED -> {}
+                        LyricsDisplayPreference.DEFAULT -> {
+                            AnimatedContent(
+                                currentLine,
+                                transitionSpec = {
+                                    fadeIn(emphasizedExit()) togetherWith fadeOut(emphasizedExit())
+                                },
+                                contentAlignment = Alignment.TopStart,
+                            ) { animatedLine ->
+                                Text(
+                                    animatedLine,
+                                    style = Typography.bodyLarge,
+                                    color = contentColor,
+                                    textAlign = TextAlign.Center,
+                                )
+                            }
                         }
-                    }
 
-                    LyricsDisplayPreference.TWO_LINES -> {
-                        AnimatedContent(
-                            Pair(currentLine, nextLine),
-                            transitionSpec = {
-                                fadeIn(emphasizedExit()) togetherWith fadeOut(emphasizedExit())
-                            },
-                            contentAlignment = Alignment.TopCenter,
-                        ) { (animatedCurrentLine, animatedNextLine) ->
-                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                if (animatedCurrentLine.isNotEmpty()) {
-                                    Text(
-                                        animatedCurrentLine,
-                                        style = Typography.bodyLarge,
-                                        color = contentColor,
-                                        textAlign = TextAlign.Center,
-                                    )
-                                }
-                                if (animatedNextLine.isNotEmpty()) {
-                                    Text(
-                                        animatedNextLine,
-                                        style = Typography.bodyLarge,
-                                        color = contentColor.copy(alpha = INACTIVE_ALPHA),
-                                        textAlign = TextAlign.Center,
-                                    )
+                        LyricsDisplayPreference.TWO_LINES -> {
+                            AnimatedContent(
+                                Pair(currentLine, nextLine),
+                                transitionSpec = {
+                                    fadeIn(emphasizedExit()) togetherWith fadeOut(emphasizedExit())
+                                },
+                                contentAlignment = Alignment.TopCenter,
+                            ) { (animatedCurrentLine, animatedNextLine) ->
+                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                    if (animatedCurrentLine.isNotEmpty()) {
+                                        Text(
+                                            animatedCurrentLine,
+                                            style = Typography.bodyLarge,
+                                            color = contentColor,
+                                            textAlign = TextAlign.Center,
+                                        )
+                                    }
+                                    if (animatedNextLine.isNotEmpty()) {
+                                        Text(
+                                            animatedNextLine,
+                                            style = Typography.bodyLarge,
+                                            color = contentColor.copy(alpha = INACTIVE_ALPHA),
+                                            textAlign = TextAlign.Center,
+                                        )
+                                    }
                                 }
                             }
                         }

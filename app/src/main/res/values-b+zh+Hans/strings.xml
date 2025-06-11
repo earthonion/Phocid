@@ -195,6 +195,7 @@
     <string name="preferences_lyrics_display_default">默认</string>
     <string name="preferences_lyrics_display_disabled">关闭</string>
     <string name="preferences_lyrics_display_two_lines">双行</string>
+    <string name="preferences_lyrics_scaling">歌词大小</string>
     <string name="preferences_pause_on_focus_loss">失去音频焦点时暂停</string>
     <string name="preferences_play_on_output_device_connection">连接耳机时播放</string>
     <string name="preferences_playback">播放</string>

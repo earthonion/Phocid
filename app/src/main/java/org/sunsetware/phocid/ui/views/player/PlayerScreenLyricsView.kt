@@ -10,6 +10,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -27,7 +28,11 @@ import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.Placeable
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Constraints
+import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.TextUnit
+import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
@@ -105,85 +110,92 @@ object PlayerScreenLyricsViewDefault : PlayerScreenLyricsView() {
             }
         }
 
-        Box(
-            modifier =
-                Modifier.drawWithCache {
-                        val height = padding.toPx() * 2
-                        val topBrush =
-                            Brush.verticalGradient(
-                                listOf(background, Color.Transparent),
-                                startY = height / 2,
-                                endY = height,
-                            )
-                        val bottomBrush =
-                            Brush.verticalGradient(
-                                listOf(Color.Transparent, background),
-                                startY = size.height - height,
-                                endY = size.height - height / 2,
-                            )
-                        onDrawWithContent {
-                            drawRect(background)
-                            drawContent()
-                            drawRect(
-                                topBrush,
-                                topLeft = Offset.Zero,
-                                size = Size(size.width, height),
-                            )
-                            drawRect(
-                                bottomBrush,
-                                topLeft = Offset(0f, size.height - height),
-                                size = Size(size.width, height),
-                            )
-                        }
-                    }
-                    .pointerInput(Unit) {
-                        awaitEachGesture {
-                            awaitFirstDown(pass = PointerEventPass.Initial)
-                            onDisableAutoScroll()
-                        }
-                    }
-                    .verticalScroll(scrollState)
-                    .padding(horizontal = padding, vertical = padding * 2)
+        val density = LocalDensity.current
+        CompositionLocalProvider(
+            LocalDensity provides
+                Density(density.density, density.fontScale * preferences.lyricsSizeMultiplier)
         ) {
-            Layout(
-                content = {
-                    when (lyrics) {
-                        is PlayerScreenLyrics.Synced -> {
-                            lyrics.value.lines.forEachIndexed { index, (_, text) ->
-                                val alpha by
-                                    animateFloatAsState(
-                                        if (index == currentLineIndex) 1f else INACTIVE_ALPHA
-                                    )
-                                Text(text, style = textStyle, modifier = Modifier.alpha(alpha))
+            Box(
+                modifier =
+                    Modifier.drawWithCache {
+                            val height = padding.toPx() * 2
+                            val topBrush =
+                                Brush.verticalGradient(
+                                    listOf(background, Color.Transparent),
+                                    startY = height / 2,
+                                    endY = height,
+                                )
+                            val bottomBrush =
+                                Brush.verticalGradient(
+                                    listOf(Color.Transparent, background),
+                                    startY = size.height - height,
+                                    endY = size.height - height / 2,
+                                )
+                            onDrawWithContent {
+                                drawRect(background)
+                                drawContent()
+                                drawRect(
+                                    topBrush,
+                                    topLeft = Offset.Zero,
+                                    size = Size(size.width, height),
+                                )
+                                drawRect(
+                                    bottomBrush,
+                                    topLeft = Offset(0f, size.height - height),
+                                    size = Size(size.width, height),
+                                )
                             }
                         }
-                        is PlayerScreenLyrics.Unsynced -> {
-                            for (line in lyrics.value.lines()) {
-                                Text(line, style = textStyle)
+                        .pointerInput(Unit) {
+                            awaitEachGesture {
+                                awaitFirstDown(pass = PointerEventPass.Initial)
+                                onDisableAutoScroll()
                             }
                         }
-                        null -> {
-                            Text(Strings[R.string.player_no_lyrics], style = textStyle)
+                        .verticalScroll(scrollState)
+                        .padding(horizontal = padding, vertical = padding * 2)
+            ) {
+                Layout(
+                    content = {
+                        when (lyrics) {
+                            is PlayerScreenLyrics.Synced -> {
+                                lyrics.value.lines.forEachIndexed { index, (_, text) ->
+                                    val alpha by
+                                        animateFloatAsState(
+                                            if (index == currentLineIndex) 1f else INACTIVE_ALPHA
+                                        )
+                                    Text(text, style = textStyle, modifier = Modifier.alpha(alpha))
+                                }
+                            }
+                            is PlayerScreenLyrics.Unsynced -> {
+                                for (line in lyrics.value.lines()) {
+                                    Text(line, style = textStyle)
+                                }
+                            }
+                            null -> {
+                                Text(Strings[R.string.player_no_lyrics], style = textStyle)
+                            }
                         }
                     }
-                }
-            ) { measurables, constraints ->
-                val paddingPx = (padding * 2).roundToPx()
-                val spacing = 8.dp.roundToPx()
+                ) { measurables, constraints ->
+                    val paddingPx = (padding * 2).roundToPx()
+                    val spacing = TextUnit(8f, TextUnitType.Sp).roundToPx()
 
-                var placeables = mutableListOf<Pair<Placeable, Int>>()
-                var cursor = 0
-                val positions = mutableListOf<Int>()
-                for (measurable in measurables) {
-                    val placeable = measurable.measure(Constraints(maxWidth = constraints.maxWidth))
-                    placeables.add(placeable to cursor)
-                    positions.add(cursor + placeable.height / 2 + paddingPx)
-                    cursor += placeable.height + spacing
-                }
-                linePositions.set(positions)
-                layout(constraints.maxWidth, cursor) {
-                    for ((placeable, top) in placeables) {
-                        placeable.placeRelative(0, top)
+                    var placeables = mutableListOf<Pair<Placeable, Int>>()
+                    var cursor = 0
+                    val positions = mutableListOf<Int>()
+                    for (measurable in measurables) {
+                        val placeable =
+                            measurable.measure(Constraints(maxWidth = constraints.maxWidth))
+                        placeables.add(placeable to cursor)
+                        positions.add(cursor + placeable.height / 2 + paddingPx)
+                        cursor += placeable.height + spacing
+                    }
+                    linePositions.set(positions)
+                    layout(constraints.maxWidth, cursor) {
+                        for ((placeable, top) in placeables) {
+                            placeable.placeRelative(0, top)
+                        }
                     }
                 }
             }
