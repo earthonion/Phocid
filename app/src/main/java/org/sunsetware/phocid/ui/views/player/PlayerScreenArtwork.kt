@@ -8,6 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.Player
 import org.sunsetware.phocid.data.ArtworkColorPreference
@@ -27,6 +28,7 @@ sealed class PlayerScreenArtwork {
     abstract fun Compose(
         playerTransientStateVersion: Long,
         carouselArtworkCache: ArtworkCache,
+        swipeVelocityThreshold: Dp,
         highResArtworkPreference: HighResArtworkPreference,
         artworkColorPreference: ArtworkColorPreference,
         playerState: PlayerState,
@@ -44,6 +46,7 @@ object PlayerScreenArtworkDefault : PlayerScreenArtwork() {
     override fun Compose(
         playerTransientStateVersion: Long,
         carouselArtworkCache: ArtworkCache,
+        swipeVelocityThreshold: Dp,
         highResArtworkPreference: HighResArtworkPreference,
         artworkColorPreference: ArtworkColorPreference,
         playerState: PlayerState,
@@ -57,6 +60,7 @@ object PlayerScreenArtworkDefault : PlayerScreenArtwork() {
         TrackCarousel(
             state = playerState,
             key = playerTransientStateVersion,
+            velocityThreshold = swipeVelocityThreshold,
             countSelector = { it.actualPlayQueue.size },
             indexSelector = { it.currentIndex },
             repeatSelector = { it.repeat != Player.REPEAT_MODE_OFF },

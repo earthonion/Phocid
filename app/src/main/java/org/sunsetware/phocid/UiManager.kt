@@ -110,7 +110,7 @@ class UiManager(
                 .collect()
         }
 
-    val playerScreenDragState = BinaryDragState()
+    val playerScreenDragState = BinaryDragState({ preferences.value.swipeVelocityThreshold })
 
     val playerScreenUseLyricsView = MutableStateFlow(false)
 

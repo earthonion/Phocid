@@ -12,11 +12,12 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.input.pointer.util.VelocityTracker1D
+import androidx.compose.ui.unit.Dp
 import kotlin.math.absoluteValue
 import kotlin.math.sign
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import org.sunsetware.phocid.DRAG_THRESHOLD
 import org.sunsetware.phocid.ui.theme.emphasizedExit
 
 /** Yes, [androidx.compose.material3.SwipeToDismissBox] is yet another Google's useless s***. */
@@ -24,40 +25,50 @@ import org.sunsetware.phocid.ui.theme.emphasizedExit
 inline fun <T> SwipeToDismiss(
     key: T,
     enabled: Boolean,
+    velocityThreshold: Dp,
     crossinline onDismiss: (T) -> Unit,
     crossinline content: @Composable BoxScope.() -> Unit,
 ) {
     val coroutineScope = rememberCoroutineScope()
     val dispatcher = Dispatchers.Main.limitedParallelism(1)
     val updatedKey by rememberUpdatedState(key)
+    val updatedVelocityThreshold by rememberUpdatedState(velocityThreshold)
     val offset = remember { Animatable(0f) }
+    val velocityTracker = remember { VelocityTracker1D(true) }
 
     Box(
         modifier =
             if (enabled) {
                     Modifier.pointerInput(Unit) {
                         detectHorizontalDragGestures(
-                            onDragStart = {},
+                            onDragStart = { velocityTracker.resetTracking() },
                             onDragCancel = {
                                 coroutineScope.launch(dispatcher) {
                                     offset.animateTo(0f, emphasizedExit())
                                 }
                             },
                             onDragEnd = {
-                                coroutineScope.launch(dispatcher) {
-                                    val value = offset.value
-                                    if (
-                                        value >= DRAG_THRESHOLD.toPx() ||
-                                            value <= -DRAG_THRESHOLD.toPx()
-                                    ) {
+                                val velocity = velocityTracker.calculateVelocity()
+                                val positionalThreshold = size.width / 2
+                                val velocityThreshold = updatedVelocityThreshold.toPx()
+                                val value = offset.value
+                                if (
+                                    value.absoluteValue >= positionalThreshold ||
+                                        velocity.absoluteValue >= velocityThreshold
+                                ) {
+                                    coroutineScope.launch(dispatcher) {
                                         offset.animateTo(value.sign * size.width, emphasizedExit())
                                         onDismiss(updatedKey)
-                                    } else {
+                                    }
+                                } else {
+                                    coroutineScope.launch(dispatcher) {
                                         offset.animateTo(0f, emphasizedExit())
                                     }
                                 }
+                                velocityTracker.resetTracking()
                             },
                         ) { change, dragAmount ->
+                            velocityTracker.addDataPoint(change.uptimeMillis, dragAmount)
                             coroutineScope.launch(dispatcher) {
                                 offset.snapTo(offset.value + dragAmount)
                             }

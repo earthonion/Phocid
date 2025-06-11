@@ -229,6 +229,7 @@
     <string name="preferences_shape_square">正方形</string>
     <string name="preferences_sorting_language">排序語言</string>
     <string name="preferences_sorting_language_system">系統語言</string>
+    <string name="preferences_swipe_threshold">滑動閾值</string>
     <string name="preferences_swipe_to_remove_from_queue">滑動來從待播清單中移除</string>
     <string name="preferences_system_equalizer">開啟系統等化器</string>
     <string name="preferences_tab_style">分頁樣式</string>
@@ -252,7 +253,7 @@
     <string name="preferences_third_party_licenses">第三方授權條款</string>
     <string name="preferences_treat_embedded_lyrics_as_lrc">將內嵌歌詞視為 LRC</string>
     <string name="preferences_ui_scaling">介面縮放比例</string>
-    <string name="preferences_ui_scaling_number">{0, number, ::.00}×</string>
+    <string name="preferences_multiplier_number">{0, number, ::.00}×</string>
     <string name="preferences_version">版本</string>
     <string name="preferences_website">網站</string>
     <string name="preferences_widget_accent_background">彩色背景</string>

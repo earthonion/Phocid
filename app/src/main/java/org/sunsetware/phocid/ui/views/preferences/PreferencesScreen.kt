@@ -297,7 +297,7 @@ object PreferencesScreen : TopLevelScreen() {
                     UtilityListItem(
                         title = Strings[R.string.preferences_ui_scaling],
                         subtitle =
-                            Strings[R.string.preferences_ui_scaling_number].icuFormat(
+                            Strings[R.string.preferences_multiplier_number].icuFormat(
                                 preferences.densityMultiplier
                             ),
                         modifier =
@@ -314,7 +314,7 @@ object PreferencesScreen : TopLevelScreen() {
                                         min = 50,
                                         max = 200,
                                         numberFormatter = {
-                                            Strings[R.string.preferences_ui_scaling_number]
+                                            Strings[R.string.preferences_multiplier_number]
                                                 .icuFormat(it / 100f)
                                         },
                                         onSetValue = { viewModel, value ->
@@ -329,7 +329,7 @@ object PreferencesScreen : TopLevelScreen() {
                     UtilityListItem(
                         title = Strings[R.string.preferences_lyrics_scaling],
                         subtitle =
-                            Strings[R.string.preferences_ui_scaling_number].icuFormat(
+                            Strings[R.string.preferences_multiplier_number].icuFormat(
                                 preferences.lyricsSizeMultiplier
                             ),
                         modifier =
@@ -346,13 +346,47 @@ object PreferencesScreen : TopLevelScreen() {
                                         min = 50,
                                         max = 400,
                                         numberFormatter = {
-                                            Strings[R.string.preferences_ui_scaling_number]
+                                            Strings[R.string.preferences_multiplier_number]
                                                 .icuFormat(it / 100f)
                                         },
                                         onSetValue = { viewModel, value ->
                                             viewModel.updatePreferences { preferences ->
                                                 preferences.copy(
                                                     lyricsSizeMultiplier = value / 100f
+                                                )
+                                            }
+                                        },
+                                    )
+                                )
+                            },
+                    )
+                    UtilityListItem(
+                        title = Strings[R.string.preferences_swipe_threshold],
+                        subtitle =
+                            Strings[R.string.preferences_multiplier_number].icuFormat(
+                                preferences.swipeThresholdMultiplier
+                            ),
+                        modifier =
+                            Modifier.clickable {
+                                uiManager.openDialog(
+                                    PreferencesSteppedSliderDialog(
+                                        title = Strings[R.string.preferences_swipe_threshold],
+                                        initialValue = {
+                                            it.preferences.value.swipeThresholdMultiplier
+                                                .times(10)
+                                                .roundToIntOrZero()
+                                        },
+                                        defaultValue = 10,
+                                        min = 1,
+                                        max = 100,
+                                        numberFormatter = {
+                                            Strings[R.string.preferences_multiplier_number]
+                                                .icuFormat(it / 10f)
+                                        },
+                                        onSetValue = { viewModel, value ->
+                                            viewModel.updatePreferences { preferences ->
+                                                preferences.copy(
+                                                    swipeThresholdMultiplier = value / 10f
                                                 )
                                             }
                                         },

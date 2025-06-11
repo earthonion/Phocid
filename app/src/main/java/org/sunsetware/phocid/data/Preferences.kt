@@ -55,6 +55,7 @@ data class Preferences(
     val lyricsDisplay: LyricsDisplayPreference = LyricsDisplayPreference.DEFAULT,
     val densityMultiplier: Float = 1f,
     val lyricsSizeMultiplier: Float = 1f,
+    val swipeThresholdMultiplier: Float = 1f,
     // Playback
     val playOnOutputDeviceConnection: Boolean = false,
     val pauseOnFocusLoss: Boolean = true,
@@ -170,6 +171,9 @@ data class Preferences(
             else Collator.getInstance(SystemLocale))
             .apply { this.strength = Collator.PRIMARY }
             .freeze() as RuleBasedCollator
+
+    /** Base value taken from [androidx.compose.material3.SwipeToDismissBox]. */
+    @Transient val swipeVelocityThreshold = 125.dp * swipeThresholdMultiplier
 }
 
 @Serializable

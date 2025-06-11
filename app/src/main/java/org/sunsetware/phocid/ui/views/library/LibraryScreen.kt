@@ -93,6 +93,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -345,6 +346,7 @@ fun LibraryScreen(
                 playerManager,
                 libraryIndex,
                 viewModel.carouselArtworkCache,
+                preferences.swipeVelocityThreshold,
                 preferences.highResArtworkPreference,
                 preferences.artworkColorPreference,
                 preferences.shapePreference.artworkShape,
@@ -707,6 +709,7 @@ private fun BottomBar(
     playerManager: PlayerManager,
     libraryIndex: LibraryIndex,
     carouselArtworkCache: ArtworkCache,
+    swipeVelocityThreshold: Dp,
     highResArtworkPreference: HighResArtworkPreference,
     artworkColorPreference: ArtworkColorPreference,
     artworkShape: Shape,
@@ -796,6 +799,7 @@ private fun BottomBar(
                         TrackCarousel(
                             state = playerState,
                             key = playerTransientStateVersion,
+                            velocityThreshold = swipeVelocityThreshold,
                             countSelector = { it.actualPlayQueue.size },
                             indexSelector = { it.currentIndex },
                             repeatSelector = { it.repeat != Player.REPEAT_MODE_OFF },

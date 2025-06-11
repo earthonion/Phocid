@@ -202,6 +202,7 @@ fun PlayerScreen(dragLock: DragLock, viewModel: MainViewModel = viewModel()) {
     }
     val playQueueDragState = remember {
         BinaryDragState(
+            { viewModel.preferences.value.swipeVelocityThreshold },
             WeakReference(coroutineScope),
             0f,
             onSnapToZero = { coroutineScope.launch { scrollPlayQueueToNextTrack() } },
@@ -409,6 +410,7 @@ fun PlayerScreen(dragLock: DragLock, viewModel: MainViewModel = viewModel()) {
                             components.artwork.Compose(
                                 playerTransientStateVersion = playerTransientStateVersion,
                                 carouselArtworkCache = viewModel.carouselArtworkCache,
+                                swipeVelocityThreshold = preferences.swipeVelocityThreshold,
                                 highResArtworkPreference = preferences.highResArtworkPreference,
                                 artworkColorPreference = preferences.artworkColorPreference,
                                 playerState = playerState,
@@ -506,6 +508,7 @@ fun PlayerScreen(dragLock: DragLock, viewModel: MainViewModel = viewModel()) {
                                 dragIndicatorVisibility =
                                     playQueueDragState.position == 1f || playQueueDragTarget == 1f,
                                 swipeToRemoveFromQueue = preferences.swipeToRemoveFromQueue,
+                                swipeVelocityThreshold = preferences.swipeVelocityThreshold,
                                 alwaysShowHintOnScroll = preferences.alwaysShowHintOnScroll,
                                 onTogglePlayQueue = {
                                     playQueueDragState.animateTo(

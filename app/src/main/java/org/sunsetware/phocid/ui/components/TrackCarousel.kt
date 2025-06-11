@@ -17,6 +17,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -24,11 +25,11 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.PointerInputScope
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.util.VelocityTracker1D
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.sunsetware.phocid.DRAG_THRESHOLD
 import org.sunsetware.phocid.ui.theme.emphasizedExit
 import org.sunsetware.phocid.utils.wrap
 
@@ -57,6 +58,7 @@ data class CarouselStateBatch<T>(
 inline fun <reified T> TrackCarousel(
     state: T,
     key: Any?,
+    velocityThreshold: Dp,
     crossinline countSelector: @DisallowComposableCalls (T) -> Int,
     crossinline indexSelector: @DisallowComposableCalls (T) -> Int,
     crossinline repeatSelector: @DisallowComposableCalls (T) -> Boolean,
@@ -94,6 +96,7 @@ inline fun <reified T> TrackCarousel(
     var isLastAdjacent by remember { mutableStateOf(true) }
     var lastNonadjacentDirection by remember { mutableIntStateOf(-1) }
     val offset = remember { Animatable(0f) }
+    val updatedVelocityThreshold by rememberUpdatedState(velocityThreshold)
     val velocityTracker = remember { VelocityTracker1D(true) }
 
     @Suppress("VARIABLE_WITH_REDUNDANT_INITIALIZER")
@@ -156,9 +159,7 @@ inline fun <reified T> TrackCarousel(
                     nextIndex,
                 )
 
-            // TODO: try actually utilizing velocity here
             offset.animateTo(0f, emphasizedExit())
-            velocityTracker.resetTracking()
         }
     }
 
@@ -170,44 +171,49 @@ inline fun <reified T> TrackCarousel(
                 .pointerInput(tapKey) { detectTapGestures { onTap() } }
                 .pointerInput(Unit) { onVerticalDrag() }
                 .pointerInput(Unit) {
-                    var lastTime = null as Long?
                     detectHorizontalDragGestures(
                         onDragStart = {
                             horizontalDragTotal = 0f
                             isLastAdjacent = true
                             velocityTracker.resetTracking()
-                            lastTime = null
                         },
                         onDragCancel = {
-                            coroutineScope.launch(dispatcher) {
-                                offset.animateTo(0f)
-                                horizontalDragTotal = 0f
-                                isLastAdjacent = true
-                            }
+                            coroutineScope.launch { offset.animateTo(0f) }
+                            horizontalDragTotal = 0f
+                            isLastAdjacent = true
+                            velocityTracker.resetTracking()
                         },
                         onDragEnd = {
+                            val velocity = velocityTracker.calculateVelocity()
                             coroutineScope.launch(dispatcher) {
-                                if (horizontalDragTotal >= DRAG_THRESHOLD.toPx()) {
-                                    onPrevious()
-                                } else if (horizontalDragTotal <= -DRAG_THRESHOLD.toPx()) {
-                                    onNext()
-                                } else {
-                                    offset.animateTo(0f)
+                                val positionalThreshold = size.width / 2
+                                val velocityThreshold = updatedVelocityThreshold.toPx()
+                                try {
+                                    if (
+                                        horizontalDragTotal >= positionalThreshold ||
+                                            velocity >= velocityThreshold
+                                    ) {
+                                        onPrevious()
+                                    } else if (
+                                        horizontalDragTotal <= -positionalThreshold ||
+                                            velocity <= -velocityThreshold
+                                    ) {
+                                        onNext()
+                                    } else {
+                                        coroutineScope.launch { offset.animateTo(0f) }
+                                    }
+                                } finally {
+                                    horizontalDragTotal = 0f
+                                    isLastAdjacent = true
+                                    velocityTracker.resetTracking()
                                 }
-                                horizontalDragTotal = 0f
-                                isLastAdjacent = true
                             }
                         },
                     ) { change, dragAmount ->
-                        coroutineScope.launch(dispatcher) {
-                            velocityTracker.addDataPoint(
-                                change.uptimeMillis,
-                                dragAmount / size.width,
-                            )
-                            horizontalDragTotal += dragAmount
-                            isLastAdjacent = true
-                            offset.snapTo(horizontalDragTotal / size.width)
-                        }
+                        velocityTracker.addDataPoint(change.uptimeMillis, dragAmount)
+                        horizontalDragTotal += dragAmount
+                        isLastAdjacent = true
+                        coroutineScope.launch { offset.snapTo(horizontalDragTotal / size.width) }
                     }
                 }
     ) {

@@ -234,6 +234,7 @@
     <string name="preferences_shape_square">Square</string>
     <string name="preferences_sorting_language">Sorting language</string>
     <string name="preferences_sorting_language_system">System language</string>
+    <string name="preferences_swipe_threshold">Swipe threshold</string>
     <string name="preferences_swipe_to_remove_from_queue">Swipe to remove from queue</string>
     <string name="preferences_system_equalizer">Open system equalizer</string>
     <string name="preferences_tab_style">Tab style</string>
@@ -257,7 +258,7 @@
     <string name="preferences_third_party_licenses">Third party licenses</string>
     <string name="preferences_treat_embedded_lyrics_as_lrc">Treat embedded lyrics as LRC</string>
     <string name="preferences_ui_scaling">UI scaling</string>
-    <string name="preferences_ui_scaling_number">{0, number, ::.00}×</string>
+    <string name="preferences_multiplier_number">{0, number, ::.00}×</string>
     <string name="preferences_version">Version</string>
     <string name="preferences_website">Website</string>
     <string name="preferences_widget_accent_background">Colored background</string>
