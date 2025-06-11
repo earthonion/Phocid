@@ -132,6 +132,7 @@
 
     <string name="preferences">偏好設定</string>
     <string name="preferences_about">關於</string>
+    <string name="preferences_always_show_hint_on_scroll">捲動時始終顯示索引</string>
     <string name="preferences_artwork_color">封面色彩取出</string>
     <!-- "Muted" as in opposite of vibrant -->
     <string name="preferences_artwork_color_muted_first">傾向淡色</string>

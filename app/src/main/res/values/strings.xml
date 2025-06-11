@@ -137,6 +137,7 @@
 
     <string name="preferences">Preferences</string>
     <string name="preferences_about">About</string>
+    <string name="preferences_always_show_hint_on_scroll">Always show thumb index on scroll</string>
     <string name="preferences_artwork_color">Artwork color extraction</string>
     <!-- "Muted" as in opposite of vibrant -->
     <string name="preferences_artwork_color_muted_first">Prefer muted</string>

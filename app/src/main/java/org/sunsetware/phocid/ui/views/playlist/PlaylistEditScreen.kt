@@ -173,7 +173,11 @@ class PlaylistEditScreen(private val playlistKey: UUID) : TopLevelScreen() {
                 modifier = Modifier.fillMaxSize().padding(scaffoldPadding),
                 color = MaterialTheme.colorScheme.background,
             ) {
-                Scrollbar(lazyListState, { (it + 1).toString() }) {
+                Scrollbar(
+                    lazyListState,
+                    { (it + 1).toString() },
+                    preferences.alwaysShowHintOnScroll,
+                ) {
                     LazyColumn(state = lazyListState, modifier = Modifier.fillMaxSize()) {
                         itemsIndexed(
                             reorderingPlaylist ?: playlist?.entries ?: emptyList(),

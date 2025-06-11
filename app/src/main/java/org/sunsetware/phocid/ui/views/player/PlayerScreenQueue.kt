@@ -69,6 +69,7 @@ sealed class PlayerScreenQueue {
         contentColor: Color,
         dragIndicatorVisibility: Boolean,
         swipeToRemoveFromQueue: Boolean,
+        alwaysShowHintOnScroll: Boolean,
         onTogglePlayQueue: () -> Unit,
         onMoveTrack: (Int, Int) -> Unit,
         onRemoveTrack: (Int) -> Unit,
@@ -104,6 +105,7 @@ class PlayerScreenQueueDefaultBase(
         contentColor: Color,
         dragIndicatorVisibility: Boolean,
         swipeToRemoveFromQueue: Boolean,
+        alwaysShowHintOnScroll: Boolean,
         onTogglePlayQueue: () -> Unit,
         onMoveTrack: (Int, Int) -> Unit,
         onRemoveTrack: (Int) -> Unit,
@@ -159,7 +161,11 @@ class PlayerScreenQueueDefaultBase(
                     )
                 }
 
-                Scrollbar(lazyListState, { (it - currentTrackIndex).toString() }) {
+                Scrollbar(
+                    lazyListState,
+                    { (it - currentTrackIndex).toString() },
+                    alwaysShowHintOnScroll,
+                ) {
                     LazyColumn(
                         state = lazyListState,
                         modifier = Modifier.fillMaxSize().nestedScroll(nestedScrollConnection),

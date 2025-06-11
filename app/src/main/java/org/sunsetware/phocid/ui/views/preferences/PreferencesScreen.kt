@@ -206,6 +206,15 @@ object PreferencesScreen : TopLevelScreen() {
                                 )
                             },
                     )
+                    UtilitySwitchListItem(
+                        title = Strings[R.string.preferences_always_show_hint_on_scroll],
+                        checked = preferences.alwaysShowHintOnScroll,
+                        onCheckedChange = { checked ->
+                            viewModel.updatePreferences {
+                                it.copy(alwaysShowHintOnScroll = checked)
+                            }
+                        },
+                    )
                     UtilityListItem(
                         title = Strings[R.string.preferences_player_screen_layout],
                         subtitle = Strings[preferences.playerScreenLayout.stringId],

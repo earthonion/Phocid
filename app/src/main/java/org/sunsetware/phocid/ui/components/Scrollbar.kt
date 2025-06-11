@@ -24,10 +24,13 @@ import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.geometry.toRect
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
-import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
+import androidx.compose.ui.graphics.withSaveLayer
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
@@ -102,6 +105,7 @@ fun DrawScope.drawHint(
     textMeasurer: TextMeasurer,
     thumbWidth: Dp,
     color: Color,
+    alpha: Float,
     hint: String,
     start: Float,
 ) {
@@ -135,6 +139,13 @@ fun DrawScope.drawHint(
     val ltr = layoutDirection == LayoutDirection.Ltr
     val direction = if (ltr) 1 else -1
     val origin = if (ltr) size.width else 0f
+    val offset =
+        Offset(
+            origin +
+                direction * (-marginX - c / 2 + r2 * 2 + (sqrt2 - 1) * r - width) +
+                (if (ltr) 0f else -width),
+            marginY + offsetY,
+        )
 
     val triangle = Path()
     triangle.moveTo(
@@ -147,27 +158,38 @@ fun DrawScope.drawHint(
     triangle.relativeLineTo(0f, -(c - cot225 * 2 * r2))
     triangle.relativeLineTo(direction * (1 + 1 / sqrt2) * r2, -1 / sqrt2 * r2)
     triangle.close()
-    drawPath(triangle, color)
-    drawCircle(
-        color,
-        r,
-        Offset(origin + direction * (-marginX - r), marginY + c / 2 - (cot225 - 1) * r2 + offsetY),
-    )
-    val offset =
-        Offset(
-            origin +
-                direction * (-marginX - c / 2 + r2 * 2 + (sqrt2 - 1) * r - width) +
-                (if (ltr) 0f else -width),
-            marginY + offsetY,
-        )
-    drawRoundRect(color, offset, Size(width, height), CornerRadius(r2, r2))
-    drawText(text, color.contentColor(), offset + Offset((width - text.size.width) / 2, 0f))
+
+    drawIntoCanvas { canvas ->
+        canvas.withSaveLayer(size.toRect(), Paint().apply { this.alpha = alpha }) {
+            val paint = Paint().apply { this.color = color }
+            canvas.drawPath(triangle, paint)
+            canvas.drawCircle(
+                Offset(
+                    origin + direction * (-marginX - r),
+                    marginY + c / 2 - (cot225 - 1) * r2 + offsetY,
+                ),
+                r,
+                paint,
+            )
+            canvas.drawRoundRect(
+                offset.x,
+                offset.y,
+                offset.x + width,
+                offset.y + height,
+                r2,
+                r2,
+                paint,
+            )
+        }
+    }
+    drawText(text, color.contentColor(), offset + Offset((width - text.size.width) / 2, 0f), alpha)
 }
 
 @Composable
 inline fun ScrollbarThumb(
     width: Dp,
     color: Color,
+    alwaysShowHintOnScroll: Boolean,
     crossinline alpha: () -> Float,
     crossinline thumbRange: () -> Pair<Float, Float>,
     crossinline totalItemsCount: () -> Int,
@@ -178,7 +200,7 @@ inline fun ScrollbarThumb(
 ) {
     val layoutDirection = LocalLayoutDirection.current
     var isThumbDragging by remember { mutableStateOf(false) }
-    val hintAlpha = animateFloatAsState(if (isThumbDragging) 1f else 0f)
+    val independentHintAlpha = animateFloatAsState(if (isThumbDragging) 1f else 0f)
     val textMeasurer = rememberTextMeasurer()
 
     Box(
@@ -234,11 +256,19 @@ inline fun ScrollbarThumb(
         content()
         Box(
             modifier =
-                Modifier.graphicsLayer(alpha = hintAlpha.value)
-                    .drawBehind {
+                Modifier.drawBehind {
                         val hint = hint()
-                        if (hintAlpha.value > 0 && hint != null) {
-                            drawHint(textMeasurer, width, color, hint, thumbRange().first)
+                        val hintAlpha =
+                            if (alwaysShowHintOnScroll) alpha() else independentHintAlpha.value
+                        if (hintAlpha > 0 && hint != null) {
+                            drawHint(
+                                textMeasurer,
+                                width,
+                                color,
+                                hintAlpha,
+                                hint,
+                                thumbRange().first,
+                            )
                         }
                     }
                     .fillMaxSize()
@@ -250,6 +280,7 @@ inline fun ScrollbarThumb(
 inline fun Scrollbar(
     state: LazyListState,
     crossinline hint: (Int) -> String?,
+    alwaysShowHintOnScroll: Boolean,
     width: Dp = SCROLLBAR_DEFAULT_WIDTH,
     color: Color = SCROLLBAR_DEFAULT_COLOR,
     noinline content: @Composable () -> Unit,
@@ -291,6 +322,7 @@ inline fun Scrollbar(
     ScrollbarThumb(
         width,
         color,
+        alwaysShowHintOnScroll,
         { alpha.value },
         { thumbRange },
         { totalItemsCount },
@@ -310,6 +342,7 @@ inline fun Scrollbar(
 inline fun Scrollbar(
     state: LazyGridState,
     crossinline hint: (Int) -> String?,
+    alwaysShowHintOnScroll: Boolean,
     width: Dp = SCROLLBAR_DEFAULT_WIDTH,
     color: Color = SCROLLBAR_DEFAULT_COLOR,
     noinline content: @Composable () -> Unit,
@@ -365,6 +398,7 @@ inline fun Scrollbar(
     ScrollbarThumb(
         width,
         color,
+        alwaysShowHintOnScroll,
         { alpha.value },
         { thumbRange },
         { totalItemsCount },

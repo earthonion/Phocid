@@ -43,6 +43,7 @@ data class Preferences(
     val scrollableTabs: Boolean = true,
     val folderTabRoot: String? = null,
     val libraryTrackClickAction: LibraryTrackClickAction = LibraryTrackClickAction.PLAY_ALL,
+    val alwaysShowHintOnScroll: Boolean = false,
     val collectionViewSorting: Map<LibraryScreenCollectionType, Pair<String, Boolean>> =
         LibraryScreenCollectionType.entries.associateWith {
             Pair(it.sortingOptions.keys.first(), true)

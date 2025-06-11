@@ -125,6 +125,7 @@
 
     <string name="preferences">设置</string>
     <string name="preferences_about">关于</string>
+    <string name="preferences_always_show_hint_on_scroll">滚动时始终显示索引</string>
     <string name="preferences_artwork_color">图像色彩提取</string>
     <string name="preferences_artwork_color_muted_first">低饱和度优先</string>
     <string name="preferences_artwork_color_muted_only">强制低饱和度</string>
