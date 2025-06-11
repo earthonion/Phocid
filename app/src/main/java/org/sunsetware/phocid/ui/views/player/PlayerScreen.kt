@@ -275,7 +275,7 @@ fun PlayerScreen(dragLock: DragLock, viewModel: MainViewModel = viewModel()) {
     LaunchedEffect(currentTrack) { lyricsViewAutoScroll = true }
 
     BackHandler(playerScreenDragState.position >= 1) {
-        if (playQueueDragState.position >= 1) {
+        if (playQueueDragState.position >= 1 && !useLyricsView) {
             coroutineScope.launch {
                 playQueueLazyListState.stopScroll()
                 playQueueDragState.animateTo(0f)
@@ -400,6 +400,7 @@ fun PlayerScreen(dragLock: DragLock, viewModel: MainViewModel = viewModel()) {
                                 onBack = { uiManager.back() },
                                 onEnableLyricsViewAutoScroll = { lyricsViewAutoScroll = true },
                                 onToggleLyricsView = {
+                                    playQueueDragState.snapTo(0f)
                                     uiManager.playerScreenUseLyricsView.update { !it }
                                 },
                             )
