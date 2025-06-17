@@ -36,7 +36,6 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.core.view.HapticFeedbackConstantsCompat
 import androidx.core.view.ViewCompat
@@ -73,7 +72,7 @@ sealed class PlayerScreenQueue {
         contentColor: Color,
         dragIndicatorVisibility: Boolean,
         swipeToRemoveFromQueue: Boolean,
-        swipeVelocityThreshold: Dp,
+        minimumSwipeDistance: Int,
         alwaysShowHintOnScroll: Boolean,
         onTogglePlayQueue: () -> Unit,
         onMoveTrack: (Int, Int) -> Unit,
@@ -110,7 +109,7 @@ class PlayerScreenQueueDefaultBase(
         contentColor: Color,
         dragIndicatorVisibility: Boolean,
         swipeToRemoveFromQueue: Boolean,
-        swipeVelocityThreshold: Dp,
+        minimumSwipeDistance: Int,
         alwaysShowHintOnScroll: Boolean,
         onTogglePlayQueue: () -> Unit,
         onMoveTrack: (Int, Int) -> Unit,
@@ -188,7 +187,7 @@ class PlayerScreenQueueDefaultBase(
                                 SwipeToDismiss(
                                     index,
                                     swipeToRemoveFromQueue,
-                                    swipeVelocityThreshold,
+                                    minimumSwipeDistance,
                                     onRemoveTrack,
                                 ) {
                                     LibraryListItemHorizontal(

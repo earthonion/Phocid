@@ -25,11 +25,12 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.PointerInputScope
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.util.VelocityTracker1D
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import kotlin.math.absoluteValue
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.sunsetware.phocid.SWIPE_VELOCITY_THRESHOLD
 import org.sunsetware.phocid.ui.theme.emphasizedExit
 import org.sunsetware.phocid.utils.wrap
 
@@ -58,7 +59,7 @@ data class CarouselStateBatch<T>(
 inline fun <reified T> TrackCarousel(
     state: T,
     key: Any?,
-    velocityThreshold: Dp,
+    minimumSwipeDistance: Int,
     crossinline countSelector: @DisallowComposableCalls (T) -> Int,
     crossinline indexSelector: @DisallowComposableCalls (T) -> Int,
     crossinline repeatSelector: @DisallowComposableCalls (T) -> Boolean,
@@ -96,7 +97,7 @@ inline fun <reified T> TrackCarousel(
     var isLastAdjacent by remember { mutableStateOf(true) }
     var lastNonadjacentDirection by remember { mutableIntStateOf(-1) }
     val offset = remember { Animatable(0f) }
-    val updatedVelocityThreshold by rememberUpdatedState(velocityThreshold)
+    val updatedMinimumSwipeDistance by rememberUpdatedState(minimumSwipeDistance)
     val velocityTracker = remember { VelocityTracker1D(true) }
 
     @Suppress("VARIABLE_WITH_REDUNDANT_INITIALIZER")
@@ -187,16 +188,23 @@ inline fun <reified T> TrackCarousel(
                             val velocity = velocityTracker.calculateVelocity()
                             coroutineScope.launch(dispatcher) {
                                 val positionalThreshold = size.width / 2
-                                val velocityThreshold = updatedVelocityThreshold.toPx()
+                                val velocityThreshold = SWIPE_VELOCITY_THRESHOLD.toPx()
+                                val satisfiesMinimumDistance =
+                                    horizontalDragTotal.absoluteValue >=
+                                        updatedMinimumSwipeDistance.coerceAtMost(
+                                            positionalThreshold
+                                        )
                                 try {
                                     if (
-                                        horizontalDragTotal >= positionalThreshold ||
-                                            velocity >= velocityThreshold
+                                        satisfiesMinimumDistance &&
+                                            (horizontalDragTotal >= positionalThreshold ||
+                                                velocity >= velocityThreshold)
                                     ) {
                                         onPrevious()
                                     } else if (
-                                        horizontalDragTotal <= -positionalThreshold ||
-                                            velocity <= -velocityThreshold
+                                        satisfiesMinimumDistance &&
+                                            (horizontalDragTotal <= -positionalThreshold ||
+                                                velocity <= -velocityThreshold)
                                     ) {
                                         onNext()
                                     } else {

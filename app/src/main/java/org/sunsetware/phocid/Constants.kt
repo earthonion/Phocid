@@ -1,6 +1,7 @@
 package org.sunsetware.phocid
 
 import android.os.Build
+import androidx.compose.ui.unit.dp
 
 val READ_PERMISSION =
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
@@ -34,6 +35,7 @@ const val SHORTCUT_SHUFFLE = "org.sunsetware.phocid.SHUFFLE"
 
 const val UNKNOWN = "<unknown>"
 
+val SWIPE_VELOCITY_THRESHOLD = 125.dp
 const val TNUM = "tnum"
 
 const val DEPENDENCY_INFOS_FILE_NAME = "open_source_licenses.json"
