@@ -24,13 +24,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.PointerInputScope
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.input.pointer.util.VelocityTracker1D
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import kotlin.math.absoluteValue
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.sunsetware.phocid.SWIPE_VELOCITY_THRESHOLD
 import org.sunsetware.phocid.ui.theme.emphasizedExit
 import org.sunsetware.phocid.utils.wrap
 
@@ -59,7 +57,7 @@ data class CarouselStateBatch<T>(
 inline fun <reified T> TrackCarousel(
     state: T,
     key: Any?,
-    minimumSwipeDistance: Int,
+    swipeThreshold: Dp,
     crossinline countSelector: @DisallowComposableCalls (T) -> Int,
     crossinline indexSelector: @DisallowComposableCalls (T) -> Int,
     crossinline repeatSelector: @DisallowComposableCalls (T) -> Boolean,
@@ -97,8 +95,7 @@ inline fun <reified T> TrackCarousel(
     var isLastAdjacent by remember { mutableStateOf(true) }
     var lastNonadjacentDirection by remember { mutableIntStateOf(-1) }
     val offset = remember { Animatable(0f) }
-    val updatedMinimumSwipeDistance by rememberUpdatedState(minimumSwipeDistance)
-    val velocityTracker = remember { VelocityTracker1D(true) }
+    val updatedSwipeThreshold by rememberUpdatedState(swipeThreshold)
 
     @Suppress("VARIABLE_WITH_REDUNDANT_INITIALIZER")
     LaunchedEffect(state, key) {
@@ -176,36 +173,20 @@ inline fun <reified T> TrackCarousel(
                         onDragStart = {
                             horizontalDragTotal = 0f
                             isLastAdjacent = true
-                            velocityTracker.resetTracking()
                         },
                         onDragCancel = {
                             coroutineScope.launch { offset.animateTo(0f) }
                             horizontalDragTotal = 0f
                             isLastAdjacent = true
-                            velocityTracker.resetTracking()
                         },
                         onDragEnd = {
-                            val velocity = velocityTracker.calculateVelocity()
                             coroutineScope.launch(dispatcher) {
-                                val positionalThreshold = size.width / 2
-                                val velocityThreshold = SWIPE_VELOCITY_THRESHOLD.toPx()
-                                val satisfiesMinimumDistance =
-                                    horizontalDragTotal.absoluteValue >=
-                                        updatedMinimumSwipeDistance.coerceAtMost(
-                                            positionalThreshold
-                                        )
+                                val positionalThreshold =
+                                    updatedSwipeThreshold.roundToPx().coerceAtMost(size.width / 2)
                                 try {
-                                    if (
-                                        satisfiesMinimumDistance &&
-                                            (horizontalDragTotal >= positionalThreshold ||
-                                                velocity >= velocityThreshold)
-                                    ) {
+                                    if (horizontalDragTotal >= positionalThreshold) {
                                         onPrevious()
-                                    } else if (
-                                        satisfiesMinimumDistance &&
-                                            (horizontalDragTotal <= -positionalThreshold ||
-                                                velocity <= -velocityThreshold)
-                                    ) {
+                                    } else if (horizontalDragTotal <= -positionalThreshold) {
                                         onNext()
                                     } else {
                                         coroutineScope.launch { offset.animateTo(0f) }
@@ -213,12 +194,10 @@ inline fun <reified T> TrackCarousel(
                                 } finally {
                                     horizontalDragTotal = 0f
                                     isLastAdjacent = true
-                                    velocityTracker.resetTracking()
                                 }
                             }
                         },
                     ) { change, dragAmount ->
-                        velocityTracker.addDataPoint(change.uptimeMillis, dragAmount)
                         horizontalDragTotal += dragAmount
                         isLastAdjacent = true
                         coroutineScope.launch { offset.snapTo(horizontalDragTotal / size.width) }

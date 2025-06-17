@@ -1,24 +1,21 @@
 package org.sunsetware.phocid.ui.components
 
-import android.os.SystemClock
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.AnimationSpec
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.input.pointer.util.VelocityTracker1D
 import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.Dp
 import java.lang.ref.WeakReference
 import java.util.concurrent.atomic.AtomicBoolean
-import kotlin.math.absoluteValue
 import kotlin.math.round
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import org.sunsetware.phocid.SWIPE_VELOCITY_THRESHOLD
 import org.sunsetware.phocid.ui.theme.emphasizedStandard
 
 /**
@@ -27,7 +24,7 @@ import org.sunsetware.phocid.ui.theme.emphasizedStandard
  */
 @Stable
 class BinaryDragState(
-    private val minimumSwipeDistance: () -> Int,
+    private val swipeThreshold: () -> Dp,
     /**
      * Must be a [CoroutineScope] from a composition context (i.e. not the view model scope).
      *
@@ -50,19 +47,16 @@ class BinaryDragState(
 
     @Volatile private var dragTotal = 0f
     @Volatile private var dragInitialPosition = initialValue
-    private val velocityTracker = VelocityTracker1D(true)
 
     fun onDragStart(lock: DragLock) {
         dragTotal = 0f
         dragInitialPosition = _position.value
-        velocityTracker.resetTracking()
         lock.isDragging.set(true)
     }
 
     fun onDrag(lock: DragLock, delta: Float) {
         val delta = delta * (if (reversed) 1 else -1)
         dragTotal += delta
-        velocityTracker.addDataPoint(SystemClock.uptimeMillis(), delta)
         coroutineScope.get()?.launch {
             if (lock.isDragging.get()) {
                 _position.snapTo(
@@ -78,27 +72,15 @@ class BinaryDragState(
         lock.isDragging.set(false)
         if (dragTotal == 0f) return
         with(density) {
-            val velocity = velocityTracker.calculateVelocity()
-            val positionalThreshold = length / 2
-            val velocityThreshold = SWIPE_VELOCITY_THRESHOLD.toPx()
-            val satisfiesMinimumDistance =
-                dragTotal.absoluteValue >=
-                    minimumSwipeDistance().toFloat().coerceAtMost(positionalThreshold)
-            if (
-                satisfiesMinimumDistance &&
-                    (dragTotal >= positionalThreshold || velocity >= velocityThreshold)
-            ) {
+            val positionalThreshold = swipeThreshold().toPx().coerceAtMost(length / 2)
+            if (dragTotal >= positionalThreshold) {
                 animateTo(1f)
-            } else if (
-                satisfiesMinimumDistance &&
-                    (dragTotal <= -positionalThreshold || velocity <= -velocityThreshold)
-            ) {
+            } else if (dragTotal <= -positionalThreshold) {
                 animateTo(0f)
             } else {
                 val target = round(_position.value)
                 animateTo(target)
             }
-            velocityTracker.resetTracking()
         }
         dragTotal = 0f
     }

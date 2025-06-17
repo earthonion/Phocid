@@ -55,7 +55,7 @@ data class Preferences(
     val lyricsDisplay: LyricsDisplayPreference = LyricsDisplayPreference.DEFAULT,
     val densityMultiplier: Float = 1f,
     val lyricsSizeMultiplier: Float = 1f,
-    val minimumSwipeDistance: Int = 0,
+    val swipeThresholdMultiplier: Float = 1f,
     // Playback
     val playOnOutputDeviceConnection: Boolean = false,
     val pauseOnFocusLoss: Boolean = true,

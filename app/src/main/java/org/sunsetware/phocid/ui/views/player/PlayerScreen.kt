@@ -62,6 +62,7 @@ import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
+import org.sunsetware.phocid.DEFAULT_SWIPE_THRESHOLD
 import org.sunsetware.phocid.MainViewModel
 import org.sunsetware.phocid.R
 import org.sunsetware.phocid.UiManager
@@ -202,7 +203,7 @@ fun PlayerScreen(dragLock: DragLock, viewModel: MainViewModel = viewModel()) {
     }
     val playQueueDragState = remember {
         BinaryDragState(
-            { viewModel.preferences.value.minimumSwipeDistance },
+            { DEFAULT_SWIPE_THRESHOLD * viewModel.preferences.value.swipeThresholdMultiplier },
             WeakReference(coroutineScope),
             0f,
             onSnapToZero = { coroutineScope.launch { scrollPlayQueueToNextTrack() } },
@@ -410,7 +411,8 @@ fun PlayerScreen(dragLock: DragLock, viewModel: MainViewModel = viewModel()) {
                             components.artwork.Compose(
                                 playerTransientStateVersion = playerTransientStateVersion,
                                 carouselArtworkCache = viewModel.carouselArtworkCache,
-                                minimumSwipeDistance = preferences.minimumSwipeDistance,
+                                swipeThreshold =
+                                    DEFAULT_SWIPE_THRESHOLD * preferences.swipeThresholdMultiplier,
                                 highResArtworkPreference = preferences.highResArtworkPreference,
                                 artworkColorPreference = preferences.artworkColorPreference,
                                 playerState = playerState,
@@ -508,7 +510,8 @@ fun PlayerScreen(dragLock: DragLock, viewModel: MainViewModel = viewModel()) {
                                 dragIndicatorVisibility =
                                     playQueueDragState.position == 1f || playQueueDragTarget == 1f,
                                 swipeToRemoveFromQueue = preferences.swipeToRemoveFromQueue,
-                                minimumSwipeDistance = preferences.minimumSwipeDistance,
+                                swipeThreshold =
+                                    DEFAULT_SWIPE_THRESHOLD * preferences.swipeThresholdMultiplier,
                                 alwaysShowHintOnScroll = preferences.alwaysShowHintOnScroll,
                                 onTogglePlayQueue = {
                                     playQueueDragState.animateTo(

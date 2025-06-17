@@ -363,34 +363,31 @@ object PreferencesScreen : TopLevelScreen() {
                     UtilityListItem(
                         title = Strings[R.string.preferences_swipe_threshold],
                         subtitle =
-                            NumberFormatter.withLocale(Locale.getDefault())
-                                .notation(Notation.simple())
-                                .precision(Precision.integer())
-                                .unit(MeasureUnit.PIXEL)
-                                .format(preferences.minimumSwipeDistance)
-                                .toString(),
+                            Strings[R.string.preferences_multiplier_number].icuFormat(
+                                preferences.swipeThresholdMultiplier
+                            ),
                         modifier =
                             Modifier.clickable {
                                 uiManager.openDialog(
                                     PreferencesSteppedSliderDialog(
                                         title = Strings[R.string.preferences_swipe_threshold],
                                         initialValue = {
-                                            it.preferences.value.minimumSwipeDistance
+                                            it.preferences.value.swipeThresholdMultiplier
+                                                .times(10)
+                                                .roundToIntOrZero()
                                         },
-                                        defaultValue = 0,
-                                        min = 0,
-                                        max = 500,
+                                        defaultValue = 10,
+                                        min = 1,
+                                        max = 100,
                                         numberFormatter = {
-                                            NumberFormatter.withLocale(Locale.getDefault())
-                                                .notation(Notation.simple())
-                                                .precision(Precision.integer())
-                                                .unit(MeasureUnit.PIXEL)
-                                                .format(it)
-                                                .toString()
+                                            Strings[R.string.preferences_multiplier_number]
+                                                .icuFormat(it / 10f)
                                         },
                                         onSetValue = { viewModel, value ->
                                             viewModel.updatePreferences { preferences ->
-                                                preferences.copy(minimumSwipeDistance = value)
+                                                preferences.copy(
+                                                    swipeThresholdMultiplier = value / 10f
+                                                )
                                             }
                                         },
                                     )

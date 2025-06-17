@@ -35,7 +35,7 @@ const val SHORTCUT_SHUFFLE = "org.sunsetware.phocid.SHUFFLE"
 
 const val UNKNOWN = "<unknown>"
 
-val SWIPE_VELOCITY_THRESHOLD = 125.dp
+val DEFAULT_SWIPE_THRESHOLD = 32.dp
 const val TNUM = "tnum"
 
 const val DEPENDENCY_INFOS_FILE_NAME = "open_source_licenses.json"

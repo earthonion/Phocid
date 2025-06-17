@@ -93,6 +93,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -103,6 +104,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
+import org.sunsetware.phocid.DEFAULT_SWIPE_THRESHOLD
 import org.sunsetware.phocid.MainViewModel
 import org.sunsetware.phocid.R
 import org.sunsetware.phocid.TNUM
@@ -345,7 +347,7 @@ fun LibraryScreen(
                 playerManager,
                 libraryIndex,
                 viewModel.carouselArtworkCache,
-                preferences.minimumSwipeDistance,
+                DEFAULT_SWIPE_THRESHOLD * preferences.swipeThresholdMultiplier,
                 preferences.highResArtworkPreference,
                 preferences.artworkColorPreference,
                 preferences.shapePreference.artworkShape,
@@ -708,7 +710,7 @@ private fun BottomBar(
     playerManager: PlayerManager,
     libraryIndex: LibraryIndex,
     carouselArtworkCache: ArtworkCache,
-    minimumSwipeDistance: Int,
+    swipeThreshold: Dp,
     highResArtworkPreference: HighResArtworkPreference,
     artworkColorPreference: ArtworkColorPreference,
     artworkShape: Shape,
@@ -798,7 +800,7 @@ private fun BottomBar(
                         TrackCarousel(
                             state = playerState,
                             key = playerTransientStateVersion,
-                            minimumSwipeDistance = minimumSwipeDistance,
+                            swipeThreshold = swipeThreshold,
                             countSelector = { it.actualPlayQueue.size },
                             indexSelector = { it.currentIndex },
                             repeatSelector = { it.repeat != Player.REPEAT_MODE_OFF },
