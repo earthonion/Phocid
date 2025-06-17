@@ -815,6 +815,20 @@ data class Folder(
         return tracks
     }
 
+    fun childItemsRecursive(folderIndex: Map<String, Folder>): Pair<List<Folder>, List<Track>> {
+        val stack = mutableListOf(this)
+        val folders = mutableListOf<Folder>()
+        val tracks = mutableListOf<Track>()
+        while (stack.isNotEmpty()) {
+            val current = stack.removeAt(0)
+            stack.addAll(0, current.childFolders.mapNotNull { folderIndex[it] })
+            folders.add(current)
+            tracks.addAll(current.childTracks)
+        }
+        folders.removeAt(0)
+        return folders to tracks
+    }
+
     override val searchableStrings: List<String>
         get() = listOf(fileName)
 

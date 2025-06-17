@@ -400,15 +400,21 @@ class LibraryScreenHomeViewState(
         val rootFolder =
             libraryIndex.folders[preferences.folderTabRoot]
                 ?: libraryIndex.folders[libraryIndex.defaultRootFolder]!!
+        val (folders, tracks) =
+            if (searchQuery.isNotEmpty()) {
+                rootFolder.childItemsRecursive(libraryIndex.folders)
+            } else {
+                (rootFolder.childFolders.map { libraryIndex.folders[it]!! } to
+                    rootFolder.childTracks)
+            }
         val filteredChildFolders =
-            rootFolder.childFolders
-                .map { libraryIndex.folders[it]!! }
+            folders
                 .search(searchQuery, preferences.searchCollator)
                 .sorted(preferences.sortCollator, tab.sortingKeys, tab.sortAscending)
                 .hint(preferences.sortCollator, tab.sortingKeys)
         // Sorting is required here because onClick is "baked" with this order.
         val filteredSortedChildTracks =
-            rootFolder.childTracks
+            tracks
                 .search(searchQuery, preferences.searchCollator)
                 .sorted(preferences.sortCollator, tab.sortingKeys, tab.sortAscending)
                 .hint(preferences.sortCollator, tab.sortingKeys)
