@@ -36,6 +36,7 @@
     <string name="duration_negative_minutes_seconds">-{0, number, ::00}:{1, number, ::00}</string>
 
     <string name="library_rescan">Rescan library</string>
+    <string name="library_view_root_folder">View root folder of all tracks</string>
 
     <string name="list_empty">Empty</string>
     <string name="list_move_down">Move down</string>

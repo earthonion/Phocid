@@ -31,6 +31,7 @@
     <string name="duration_negative_minutes_seconds">-{0, number, ::00}:{1, number, ::00}</string>
 
     <string name="library_rescan">重新掃描音樂庫</string>
+    <string name="library_view_root_folder">檢視所有曲目的根目錄</string>
 
     <string name="list_empty">空白</string>
     <string name="list_move_down">下移</string>

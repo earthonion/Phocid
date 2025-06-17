@@ -42,6 +42,7 @@ import androidx.compose.material.icons.filled.ArrowDownward
 import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.BorderStyle
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.FolderOpen
 import androidx.compose.material.icons.filled.ImportExport
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
@@ -224,7 +225,7 @@ fun LibraryScreen(
     var viewSettingsVisibility by remember { mutableStateOf(false) }
     var maxGridSize by remember { mutableIntStateOf(4) }
     val overflowMenuItems =
-        remember(currentCollection, currentHomeTab) {
+        remember(currentCollection, currentHomeTab, preferences) {
             when {
                 currentCollection != null -> {
                     listOf(
@@ -264,6 +265,21 @@ fun LibraryScreen(
                             uiManager.openTopLevelScreen(PlaylistIoScreen.sync())
                         },
                         MenuItem.Divider,
+                    )
+                currentHomeTab.type == LibraryScreenTabType.FOLDERS ->
+                    listOfNotNull(
+                        preferences.folderTabRoot
+                            ?.takeIf { it != libraryIndex.defaultRootFolder }
+                            ?.let {
+                                MenuItem.Button(
+                                    Strings[R.string.library_view_root_folder],
+                                    Icons.Filled.FolderOpen,
+                                ) {
+                                    uiManager.openFolderCollectionView(
+                                        libraryIndex.defaultRootFolder
+                                    )
+                                }
+                            }
                     )
                 else -> emptyList()
             } +
