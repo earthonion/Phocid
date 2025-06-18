@@ -203,7 +203,7 @@ fun PlayerScreen(dragLock: DragLock, viewModel: MainViewModel = viewModel()) {
     }
     val playQueueDragState = remember {
         BinaryDragState(
-            { DEFAULT_SWIPE_THRESHOLD * viewModel.preferences.value.swipeThresholdMultiplier },
+            { DEFAULT_SWIPE_THRESHOLD },
             WeakReference(coroutineScope),
             0f,
             onSnapToZero = { coroutineScope.launch { scrollPlayQueueToNextTrack() } },
