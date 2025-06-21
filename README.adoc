@@ -48,7 +48,6 @@ These features are hard to implement and/or of no personal interest.
 If you want to see a feature, please https://github.com/TJYSunset/Phocid/issues[file an issue].
 
 * Playback statistics
-* Widgets
 * Notification customization
 
 == Known issues
@@ -102,8 +101,11 @@ I don't accept donations.
 
 == Credits
 
-* https://github.com/kisaragi-hiu[kisaragi-hiu] - zh-Hant translator
-* https://github.com/Omega-3-4-5[Omega-3-4-5] - de translator
+=== Translators
+
+* de: https://github.com/Omega-3-4-5[Omega-3-4-5]
+* ru: https://github.com/yurtpage[yurtpage]
+* zh-Hant: https://github.com/kisaragi-hiu[kisaragi-hiu]
 
 == License
 
