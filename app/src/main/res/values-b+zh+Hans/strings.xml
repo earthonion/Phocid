@@ -96,9 +96,9 @@
     <string name="playlist_io_sync_log">播放列表同步日志</string>
     <string name="playlist_io_sync_log_conflicting_mappings">有多个播放列表被映射到相同文件。</string>
     <string name="playlist_io_sync_log_error_listing_files">列举文件时出错。</string>
-    <string name="playlist_io_sync_log_export_error">{0} ⇄ {1}：导出错误：{0}</string>
+    <string name="playlist_io_sync_log_export_error">{0} ⇄ {1}：导出错误：{2}</string>
     <string name="playlist_io_sync_log_export_ok">{0} ⇄ {1}：成功导出。</string>
-    <string name="playlist_io_sync_log_import_error">{0} ⇄ {1}：导入错误：{0}</string>
+    <string name="playlist_io_sync_log_import_error">{0} ⇄ {1}：导入错误：{2}</string>
     <string name="playlist_io_sync_log_import_ok">{0} ⇄ {1}：成功导入。</string>
     <string name="playlist_io_sync_log_missing_file">{0} ⇄ {1}：文件不存在。</string>
     <string name="playlist_io_sync_log_missing_playlist">&lt;UNKNOWN&gt; ⇄ {0}：播放列表不存在。</string>

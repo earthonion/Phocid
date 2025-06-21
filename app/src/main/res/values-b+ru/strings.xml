@@ -130,9 +130,9 @@
     <string name="playlist_io_sync_log">Журнал синхронизации плейлистов</string>
     <string name="playlist_io_sync_log_conflicting_mappings">Несколько плейлистов сопоставлены с одним и тем же файлом.</string>
     <string name="playlist_io_sync_log_error_listing_files">Ошибка при выводе списка файлов.</string>
-    <string name="playlist_io_sync_log_export_error">{0} ⇄ {1}: Ошибка экспорта: {0}</string>
+    <string name="playlist_io_sync_log_export_error">{0} ⇄ {1}: Ошибка экспорта: {2}</string>
     <string name="playlist_io_sync_log_export_ok">{0} ⇄ {1}: Экспортировано.</string>
-    <string name="playlist_io_sync_log_import_error">{0} ⇄ {1}: Ошибка импорта: {0}</string>
+    <string name="playlist_io_sync_log_import_error">{0} ⇄ {1}: Ошибка импорта: {2}</string>
     <string name="playlist_io_sync_log_import_ok">{0} ⇄ {1}: Импортировано.</string>
     <string name="playlist_io_sync_log_missing_file">{0} ⇄ {1}: Отсутствует файл.</string>
     <string name="playlist_io_sync_log_missing_playlist">&lt;НЕИЗВЕСТНО&gt; ⇄ {0}: Отсутствует плейлист.</string>

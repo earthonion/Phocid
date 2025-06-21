@@ -108,9 +108,9 @@
     <string name="playlist_io_sync_log">Playlist sync log</string>
     <string name="playlist_io_sync_log_conflicting_mappings">Multiple playlists are mapped to the same file.</string>
     <string name="playlist_io_sync_log_error_listing_files">Error listing files.</string>
-    <string name="playlist_io_sync_log_export_error">{0} ⇄ {1}: Export error: {0}</string>
+    <string name="playlist_io_sync_log_export_error">{0} ⇄ {1}: Export error: {2}</string>
     <string name="playlist_io_sync_log_export_ok">{0} ⇄ {1}: Exported.</string>
-    <string name="playlist_io_sync_log_import_error">{0} ⇄ {1}: Import error: {0}</string>
+    <string name="playlist_io_sync_log_import_error">{0} ⇄ {1}: Import error: {2}</string>
     <string name="playlist_io_sync_log_import_ok">{0} ⇄ {1}: Imported.</string>
     <string name="playlist_io_sync_log_missing_file">{0} ⇄ {1}: Missing file.</string>
     <string name="playlist_io_sync_log_missing_playlist">&lt;UNKNOWN&gt; ⇄ {0}: Missing playlist.</string>

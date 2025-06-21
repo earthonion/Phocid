@@ -103,9 +103,9 @@
     <string name="playlist_io_sync_log">播放清單同步日誌</string>
     <string name="playlist_io_sync_log_conflicting_mappings">多個播放清單與同一個檔案同步。</string>
     <string name="playlist_io_sync_log_error_listing_files">列出檔案時發生錯誤。</string>
-    <string name="playlist_io_sync_log_export_error">{0} ⇄ {1}：匯出錯誤：{0}</string>
+    <string name="playlist_io_sync_log_export_error">{0} ⇄ {1}：匯出錯誤：{2}</string>
     <string name="playlist_io_sync_log_export_ok">{0} ⇄ {1}：已匯出。</string>
-    <string name="playlist_io_sync_log_import_error">{0} ⇄ {1}：匯入錯誤：{0}</string>
+    <string name="playlist_io_sync_log_import_error">{0} ⇄ {1}：匯入錯誤：{2}</string>
     <string name="playlist_io_sync_log_import_ok">{0} ⇄ {1}：已匯入。</string>
     <string name="playlist_io_sync_log_missing_file">{0} ⇄ {1}：缺乏檔案。</string>
     <string name="playlist_io_sync_log_missing_playlist">&lt;未知&gt; ⇄ {0}：缺乏播放清單。</string>

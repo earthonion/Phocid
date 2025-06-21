@@ -95,9 +95,9 @@
     <string name="playlist_io_sync_log">Playlist Synchronisations-Protokoll</string>
     <string name="playlist_io_sync_log_conflicting_mappings">Mehrere Playlists sind der selben Datei zugeordnet.</string>
     <string name="playlist_io_sync_log_error_listing_files">Fehler beim Auflisten der Dateien.</string>
-    <string name="playlist_io_sync_log_export_error">{0} ⇄ {1}: Exportierungsfehler: {0}</string>
+    <string name="playlist_io_sync_log_export_error">{0} ⇄ {1}: Exportierungsfehler: {2}</string>
     <string name="playlist_io_sync_log_export_ok">{0} ⇄ {1}: Exportiert.</string>
-    <string name="playlist_io_sync_log_import_error">{0} ⇄ {1}: Importierfehler: {0}</string>
+    <string name="playlist_io_sync_log_import_error">{0} ⇄ {1}: Importierfehler: {2}</string>
     <string name="playlist_io_sync_log_import_ok">{0} ⇄ {1}: Importiert.</string>
     <string name="playlist_io_sync_log_missing_file">{0} ⇄ {1}: Datei fehlt.</string>
     <string name="playlist_io_sync_log_missing_playlist">&lt;UNKNOWN&gt; ⇄ {0}: Playlist fehlt.</string>
