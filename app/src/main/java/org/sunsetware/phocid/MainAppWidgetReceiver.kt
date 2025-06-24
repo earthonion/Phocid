@@ -7,6 +7,7 @@ import android.content.Intent
 import android.content.res.Configuration
 import android.graphics.Bitmap
 import android.os.Build
+import android.view.View
 import androidx.annotation.DrawableRes
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -19,6 +20,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.core.text.layoutDirection
 import androidx.glance.ColorFilter
 import androidx.glance.GlanceId
 import androidx.glance.GlanceModifier
@@ -55,6 +57,7 @@ import androidx.glance.unit.ColorProvider
 import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
 import com.google.common.util.concurrent.MoreExecutors
+import java.util.Locale
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
@@ -374,7 +377,8 @@ class MainAppWidget : GlanceAppWidget() {
         modifier: GlanceModifier = GlanceModifier,
         spread: Boolean = false,
     ) {
-        Row(horizontalAlignment = Alignment.CenterHorizontally, modifier = modifier) {
+        @Composable
+        fun Previous() {
             IconButton(
                 R.drawable.player_previous,
                 Strings[R.string.player_previous],
@@ -386,6 +390,26 @@ class MainAppWidget : GlanceAppWidget() {
                     }
                 },
             )
+        }
+        @Composable
+        fun Next() {
+            IconButton(
+                R.drawable.player_next,
+                Strings[R.string.player_next],
+                contentColor,
+                GlanceModifier.clickable {
+                    withController(context) {
+                        it.seekToNext()
+                        it.play()
+                    }
+                },
+            )
+        }
+
+        val ltr = Locale.getDefault().layoutDirection != View.LAYOUT_DIRECTION_RTL
+
+        Row(horizontalAlignment = Alignment.CenterHorizontally, modifier = modifier) {
+            if (ltr) Previous() else Next()
             if (spread) {
                 Box(modifier = GlanceModifier.defaultWeight()) {}
             }
@@ -400,17 +424,7 @@ class MainAppWidget : GlanceAppWidget() {
             if (spread) {
                 Box(modifier = GlanceModifier.defaultWeight()) {}
             }
-            IconButton(
-                R.drawable.player_next,
-                Strings[R.string.player_next],
-                contentColor,
-                GlanceModifier.clickable {
-                    withController(context) {
-                        it.seekToNext()
-                        it.play()
-                    }
-                },
-            )
+            if (ltr) Next() else Previous()
         }
     }
 
