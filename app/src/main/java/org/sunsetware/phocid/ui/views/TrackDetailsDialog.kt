@@ -27,7 +27,6 @@ import org.sunsetware.phocid.R
 import org.sunsetware.phocid.data.Track
 import org.sunsetware.phocid.globals.Strings
 import org.sunsetware.phocid.ui.components.DialogBase
-import org.sunsetware.phocid.ui.components.SingleLineText
 
 @Stable
 class TrackDetailsDialog(private val track: Track) : Dialog() {
@@ -85,7 +84,7 @@ class TrackDetailsDialog(private val track: Track) : Dialog() {
                 modifier = Modifier.verticalScroll(scrollState).padding(horizontal = 24.dp),
                 content = {
                     for ((key, value) in content) {
-                        SingleLineText(key, color = MaterialTheme.colorScheme.primary)
+                        Text(key, color = MaterialTheme.colorScheme.primary)
                         Text(value)
                     }
                 },
