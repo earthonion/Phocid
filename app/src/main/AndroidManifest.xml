@@ -100,6 +100,15 @@
         <meta-data
             android:name="androidx.car.app.TintableAttributionIcon"
             android:resource="@drawable/notification_icon" />
+
+        <!-- Minimal Media Browser Service -->
+        <service
+        android:name=".service.MinimalMediaBrowserService"
+        android:exported="true">
+            <intent-filter>
+                <action android:name="android.media.browse.MediaBrowserService" />
+            </intent-filter>
+        </service>
     </application>
 
 </manifest>
